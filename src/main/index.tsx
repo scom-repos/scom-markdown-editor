@@ -77,11 +77,13 @@ export class MarkdownBlock extends Module implements PageBlock {
     }
 
     getData() {
-        return this.data;
+        return {
+            content: this.data
+        };
     }
 
     async setData(value: any) {
-        this.data = value || '';
+        this.data = value.content || '';
         if (!this.data) {
             this.pnlEditor.visible = true;
             this.pnlViewer.visible = false;
