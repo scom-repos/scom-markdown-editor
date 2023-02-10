@@ -85,12 +85,20 @@ export class MarkdownBlock extends Module implements PageBlock {
     async setData(value: any) {
         this.data = value.content || '';
         if (!this.data) {
-            this.pnlEditor.visible = true;
-            this.pnlViewer.visible = false;
+            // this.pnlEditor.visible = true;
+            // this.pnlViewer.visible = false;
+            this.pnlViewer.clearInnerHTML();
+            this.pnlViewer.appendChild(
+                <i-label
+                    caption="Click to edit text"
+                    opacity={0.5} display="block"
+                    padding={{top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem'}}
+                ></i-label>
+            );
             return;
         };
-        this.pnlEditor.visible = false;
-        this.pnlViewer.visible = true;
+        // this.pnlEditor.visible = false;
+        // this.pnlViewer.visible = true;
         const { width, height } = this.tag || {};
         if (!this.mdViewer) {
             this.mdViewer = await MarkdownEditor.create({
@@ -103,6 +111,8 @@ export class MarkdownBlock extends Module implements PageBlock {
             this.pnlViewer.clearInnerHTML();
             this.pnlViewer.appendChild(this.mdViewer);
         } else {
+            this.pnlViewer.clearInnerHTML();
+            this.pnlViewer.appendChild(this.mdViewer);
             this.mdViewer.value = this.data;
         }
     }
@@ -125,13 +135,21 @@ export class MarkdownBlock extends Module implements PageBlock {
     async confirm() {
         this.pnlEditor.visible = false;
         this.pnlViewer.visible = true;
-        await this.setData(this.mdEditor?.getMarkdownValue() || '');
+        await this.setData({
+            content: this.mdEditor?.getMarkdownValue() || ''
+        });
+        const builder = this.parent.closest('ide-toolbar') as any;
+        builder && builder.setData({content: this.data});
     }
 
     async discard() {
         this.pnlEditor.visible = false;
         this.pnlViewer.visible = true;
-        await this.setData(this.data);
+        await this.setData({
+            content: this.data
+        });
+        const builder = this.parent.closest('ide-toolbar') as any;
+        builder && builder.setData({content: this.data});
     }
 
     validate() {
