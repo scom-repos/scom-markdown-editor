@@ -97,8 +97,8 @@ export class MarkdownBlock extends Module implements PageBlock {
             );
             return;
         };
-        // this.pnlEditor.visible = false;
-        // this.pnlViewer.visible = true;
+        this.pnlEditor.visible = false;
+        this.pnlViewer.visible = true;
         const { width, height } = this.tag || {};
         if (!this.mdViewer) {
             this.mdViewer = await MarkdownEditor.create({
@@ -115,6 +115,7 @@ export class MarkdownBlock extends Module implements PageBlock {
             this.pnlViewer.appendChild(this.mdViewer);
             this.mdViewer.value = this.data;
         }
+        this.tag = {...this.tag, width: value.width, height: value.height}
     }
 
     getTag() {
