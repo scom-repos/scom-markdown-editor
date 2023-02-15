@@ -38,6 +38,7 @@ export class MarkdownBlock extends Module implements PageBlock {
     private mdViewer: MarkdownEditor;
     tag: any;
     defaultEdit: boolean = true;
+    private isEditing: boolean = false;
 
     readonly onEdit: () => Promise<void>;
     readonly onConfirm: () => Promise<void>;
@@ -47,6 +48,7 @@ export class MarkdownBlock extends Module implements PageBlock {
         super.init();
         if (!this.data) {
             await this.renderEditor();
+            this.renderEmptyPnl();
         }
     }
 
@@ -59,6 +61,7 @@ export class MarkdownBlock extends Module implements PageBlock {
             {
                 name: 'Edit',
                 icon: 'edit',
+                visible: () => !this.isEditing,
                 command: (builder: any, userInputData: any) => {
                     return {
                         execute: () => {
@@ -79,6 +82,7 @@ export class MarkdownBlock extends Module implements PageBlock {
             {
                 name: 'Confirm',
                 icon: 'check',
+                visible: () => this.isEditing,
                 command: (builder: any, userInputData: any) => {
                     return {
                         execute: () => {
@@ -128,24 +132,27 @@ export class MarkdownBlock extends Module implements PageBlock {
         };
     }
 
+    private renderEmptyPnl() {
+        this.pnlViewer.clearInnerHTML();
+        if (this.pnlViewer.visible)
+            this.pnlViewer.appendChild(
+                <i-label
+                    caption="Click to edit text"
+                    opacity={0.5} display="block"
+                    padding={{top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem'}}
+                ></i-label>
+            );
+    }
+
     async setData(value: any) {
         this.data = value.content || '';
-        this.tag = {...this.tag, width: value.width, height: value.height}
+        this.tag = {...this.tag, width: value.width, height: value.height};
+        this.pnlEditor.visible = this.isEditing;
+        this.pnlViewer.visible = !this.isEditing;
         if (!this.data) {
-            // this.pnlEditor.visible = true;
-            // this.pnlViewer.visible = false;
-            // this.pnlViewer.clearInnerHTML();
-            // this.pnlViewer.appendChild(
-            //     <i-label
-            //         caption="Click to edit text"
-            //         opacity={0.5} display="block"
-            //         padding={{top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem'}}
-            //     ></i-label>
-            // );
+            this.renderEmptyPnl();
             return;
         };
-        this.pnlEditor.visible = false;
-        this.pnlViewer.visible = true;
         const { width, height } = this.tag || {};
         if (!this.mdViewer) {
             this.mdViewer = await MarkdownEditor.create({
@@ -175,14 +182,16 @@ export class MarkdownBlock extends Module implements PageBlock {
     }
 
     async edit() {
-        this.pnlEditor.visible = true;
-        this.pnlViewer.visible = false;
+        // this.pnlEditor.visible = true;
+        // this.pnlViewer.visible = false;
+        this.isEditing = true;
         this.renderEditor();
     }
 
     async confirm() {
-        this.pnlEditor.visible = false;
-        this.pnlViewer.visible = true;
+        // this.pnlEditor.visible = false;
+        // this.pnlViewer.visible = true;
+        this.isEditing = false;
         await this.setData({
             content: this.mdEditor?.getMarkdownValue() || ''
         });
@@ -191,8 +200,9 @@ export class MarkdownBlock extends Module implements PageBlock {
     }
 
     async discard() {
-        this.pnlEditor.visible = false;
-        this.pnlViewer.visible = true;
+        // this.pnlEditor.visible = false;
+        // this.pnlViewer.visible = true;
+        this.isEditing = false;
         await this.setData({
             content: this.data
         });
@@ -222,6 +232,8 @@ export class MarkdownBlock extends Module implements PageBlock {
         } else {
             this.mdEditor.value = this.data;
         }
+        this.pnlEditor.visible = this.isEditing;
+        this.pnlViewer.visible = !this.isEditing;
     }
 
     render() {
