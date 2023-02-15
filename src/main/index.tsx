@@ -46,12 +46,58 @@ export class MarkdownBlock extends Module implements PageBlock {
     async init() {
         super.init();
         if (!this.data) {
-            this.renderEditor();
+            await this.renderEditor();
         }
     }
 
     getConfigSchema() {
         return configSchema;
+    }
+
+    getActions() {
+        const actions = [
+            {
+                name: 'Edit',
+                icon: 'edit',
+                command: (builder: any, userInputData: any) => {
+                    return {
+                        execute: () => {
+                            this.edit();
+                            if (builder) {
+                                builder.classList.add('is-editing');
+                                const section = builder.closest('ide-section');
+                                section && (section.style.height = 'auto');
+                            }
+                        },
+                        undo: () => {
+                        },
+                        redo: () => {}
+                    }
+                },
+                userInputDataSchema: {}
+            },
+            {
+                name: 'Confirm',
+                icon: 'check',
+                command: (builder: any, userInputData: any) => {
+                    return {
+                        execute: () => {
+                            this.confirm();
+                            if (builder) {
+                                builder.classList.remove('is-editing');
+                                const section = builder.closest('ide-section');
+                                section && (section.style.height = 'auto');
+                            }
+                        },
+                        undo: () => {
+                        },
+                        redo: () => {}
+                    }
+                },
+                userInputDataSchema: {}
+            }
+        ];
+        return actions;
     }
 
     async onConfigSave(config: IConfigData) {
@@ -84,17 +130,18 @@ export class MarkdownBlock extends Module implements PageBlock {
 
     async setData(value: any) {
         this.data = value.content || '';
+        this.tag = {...this.tag, width: value.width, height: value.height}
         if (!this.data) {
             // this.pnlEditor.visible = true;
             // this.pnlViewer.visible = false;
-            this.pnlViewer.clearInnerHTML();
-            this.pnlViewer.appendChild(
-                <i-label
-                    caption="Click to edit text"
-                    opacity={0.5} display="block"
-                    padding={{top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem'}}
-                ></i-label>
-            );
+            // this.pnlViewer.clearInnerHTML();
+            // this.pnlViewer.appendChild(
+            //     <i-label
+            //         caption="Click to edit text"
+            //         opacity={0.5} display="block"
+            //         padding={{top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem'}}
+            //     ></i-label>
+            // );
             return;
         };
         this.pnlEditor.visible = false;
@@ -105,6 +152,7 @@ export class MarkdownBlock extends Module implements PageBlock {
                 viewer: true,
                 value: this.data,
                 width,
+                height
             });
             this.mdViewer.display = 'block';
             if (height) this.mdViewer.style.height = height;
@@ -115,7 +163,6 @@ export class MarkdownBlock extends Module implements PageBlock {
             this.pnlViewer.appendChild(this.mdViewer);
             this.mdViewer.value = this.data;
         }
-        this.tag = {...this.tag, width: value.width, height: value.height}
     }
 
     getTag() {
@@ -181,7 +228,7 @@ export class MarkdownBlock extends Module implements PageBlock {
         return (
             <i-panel id="pnlMarkdownEditor">
                 <i-panel id={'pnlEditor'} padding={{ top: 15, bottom: 15, left: 30, right: 30 }} />
-                <i-panel id={'pnlViewer'} />
+                <i-panel id={'pnlViewer'} minHeight={20}/>
             </i-panel>
         );
     }
