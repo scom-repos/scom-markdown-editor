@@ -146,7 +146,7 @@ export class MarkdownBlock extends Module implements PageBlock {
 
     async setData(value: any) {
         this.data = value.content || '';
-        this.tag = {...this.tag, width: value.width, height: value.height};
+        this.setTag({width: value.width, height: value.height});
         this.pnlEditor.visible = this.isEditing;
         this.pnlViewer.visible = !this.isEditing;
         if (!this.data) {
