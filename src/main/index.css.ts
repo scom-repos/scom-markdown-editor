@@ -10,6 +10,12 @@ Styles.cssRule('#pnlMarkdownEditor', {
             overflow: Theme.layout.container.overflow,
             textAlign: (Theme.layout.container.textAlign as any),
             margin: '0 auto'
+        },
+        '#inputAIPrompt': {
+            width: '90% !important' 
+        },        
+        '#inputAIPrompt > input': {
+            width: '100% !important'
         }
     }
 });

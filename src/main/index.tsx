@@ -2,10 +2,16 @@ import {
     Module,
     Panel,
     customModule,
-    MarkdownEditor
+    MarkdownEditor,
+    VStack,
+    Input,
+    HStack,
+    Container
 } from '@ijstech/components';
 import './index.css';
 import { IConfigSchema, PageBlock } from '@markdown-editor/global';
+import { fetchAIGeneratedText } from './API';
+import { setDataFromSCConfig } from '@markdown-editor/store';
 
 export interface IConfigData {
     width?: string;
@@ -31,9 +37,11 @@ const configSchema: IConfigSchema = {
 @customModule
 export class MarkdownBlock extends Module implements PageBlock {
     private data: any;
-    private pnlMarkdownEditor: Panel;
+    private pnlMarkdownEditor: VStack;
     private pnlEditor: Panel;
     private pnlViewer: Panel;
+    private pnlAIPrompt: HStack;
+    private inputAIPrompt: Input;
     private mdEditor: MarkdownEditor;
     private mdViewer: MarkdownEditor;
     tag: any;
@@ -43,6 +51,13 @@ export class MarkdownBlock extends Module implements PageBlock {
     readonly onEdit: () => Promise<void>;
     readonly onConfirm: () => Promise<void>;
     readonly onDiscard: () => Promise<void>;
+
+    constructor(parent?: Container, options?: any) {
+        super(parent, options);
+        if (options) {
+          setDataFromSCConfig(options);
+        }
+    }
 
     async init() {
         super.init();
@@ -87,6 +102,27 @@ export class MarkdownBlock extends Module implements PageBlock {
                     return {
                         execute: () => {
                             this.confirm();
+                            if (builder) {
+                                builder.classList.remove('is-editing');
+                                const section = builder.closest('ide-section');
+                                section && (section.style.height = 'auto');
+                            }
+                        },
+                        undo: () => {
+                        },
+                        redo: () => {}
+                    }
+                },
+                userInputDataSchema: {}
+            },
+            {
+                name: 'Discard',
+                icon: 'times',
+                visible: () => this.isEditing,
+                command: (builder: any, userInputData: any) => {
+                    return {
+                        execute: () => {
+                            this.discard();
                             if (builder) {
                                 builder.classList.remove('is-editing');
                                 const section = builder.closest('ide-section');
@@ -147,7 +183,7 @@ export class MarkdownBlock extends Module implements PageBlock {
     async setData(value: any) {
         this.data = value.content || '';
         this.setTag({width: value.width, height: value.height});
-        this.pnlEditor.visible = this.isEditing;
+        this.pnlEditor.visible = this.pnlAIPrompt.visible = this.isEditing;
         this.pnlViewer.visible = !this.isEditing;
         if (!this.data) {
             this.renderEmptyPnl();
@@ -232,16 +268,28 @@ export class MarkdownBlock extends Module implements PageBlock {
         } else {
             this.mdEditor.value = this.data;
         }
-        this.pnlEditor.visible = this.isEditing;
+        this.pnlEditor.visible = this.pnlAIPrompt.visible = this.isEditing;
         this.pnlViewer.visible = !this.isEditing;
+    }
+
+    async sendAIPrompt() {
+        if (!this.inputAIPrompt.value) return;
+        const answer = await fetchAIGeneratedText(this.inputAIPrompt.value);
+        console.log('answer', answer);
+        this.mdEditor.value = (this.mdEditor?.getMarkdownValue() || '') + answer;
+        this.inputAIPrompt.value = '';
     }
 
     render() {
         return (
-            <i-panel id="pnlMarkdownEditor">
-                <i-panel id={'pnlEditor'} padding={{ top: 15, bottom: 15, left: 30, right: 30 }} />
+            <i-vstack id="pnlMarkdownEditor">
+                <i-panel id={'pnlEditor'} padding={{ top: "0.5rem", bottom: "0.5rem", left: "1rem", right: "1rem" }} />
+                <i-hstack id={'pnlAIPrompt'} width="100%" horizontalAlignment="space-between" verticalAlignment="center" padding={{ top: "0.5rem", bottom: "0.5rem", left: "1rem", right: "1rem" }}>
+                    <i-input id="inputAIPrompt" placeholder="Ask AI to edit or generate..." font={{ size: '1.5rem' }} height="auto" width="90%"></i-input>
+                    <i-button caption="Send" width="10%" font={{ color: 'rgba(255,255,255)' }} padding={{ top: "0.5rem", bottom: "0.5rem", left: "1rem", right: "1rem" }} onClick={this.sendAIPrompt}></i-button>
+                </i-hstack>           
                 <i-panel id={'pnlViewer'} minHeight={20}/>
-            </i-panel>
+            </i-vstack>
         );
     }
 }

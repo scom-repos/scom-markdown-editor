@@ -10,6 +10,11 @@
     },
     "@markdown-editor/global": {
       "path": "global"
+    },
+    "@markdown-editor/store": {
+      "path": "store"
     }
-  }
+  },
+  "aiAPIUrl": "https://api.openai.com/v1/completions",
+  "aiAPIKey": ""
 }
