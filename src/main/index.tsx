@@ -301,7 +301,7 @@ export class MarkdownBlock extends Module implements PageBlock {
                 try {
                     const parsedMessage = JSON.parse(message);
                     const text = parsedMessage.choices[0].text;
-                    this.mdEditor.value = (this.mdEditor?.getMarkdownValue() || '') + ' ' + text;
+                    this.mdEditor.value = (this.mdEditor?.getMarkdownValue() || '') + text;
                 } catch(error) {
                     console.error('Could not JSON parse stream message', message, error);
                 }
