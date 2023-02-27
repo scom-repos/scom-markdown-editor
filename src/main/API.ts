@@ -17,12 +17,13 @@ async function fetchAIGeneratedText(prompt: string) {
             "max_tokens":3000,
             "top_p":1,
             "frequency_penalty":0,
-            "presence_penalty":0
+            "presence_penalty":0,
+            "stream":true
         })
     })
-    const result = await response.json();
-    const answer: string = result.choices[0]?.text?.replaceAll('\n', '');
-    return answer;
+    // const result = await response.json();
+    // const answer: string = result.choices[0]?.text?.replaceAll('\n', '');
+    return response.body;
 }
 
 export {
