@@ -264,24 +264,25 @@ define("@markdown-editor/main", ["require", "exports", "@ijstech/components", "@
             this.renderEditor();
         }
         async confirm() {
-            var _a;
+            var _a, _b;
             // this.pnlEditor.visible = false;
             // this.pnlViewer.visible = true;
             this.isEditing = false;
             await this.setData({
                 content: ((_a = this.mdEditor) === null || _a === void 0 ? void 0 : _a.getMarkdownValue()) || ''
             });
-            const builder = this.parent.closest('ide-toolbar');
+            const builder = (_b = this.parent) === null || _b === void 0 ? void 0 : _b.closest('ide-toolbar');
             builder && builder.setData({ content: this.data });
         }
         async discard() {
+            var _a;
             // this.pnlEditor.visible = false;
             // this.pnlViewer.visible = true;
             this.isEditing = false;
             await this.setData({
                 content: this.data
             });
-            const builder = this.parent.closest('ide-toolbar');
+            const builder = (_a = this.parent) === null || _a === void 0 ? void 0 : _a.closest('ide-toolbar');
             builder && builder.setData({ content: this.data });
         }
         validate() {

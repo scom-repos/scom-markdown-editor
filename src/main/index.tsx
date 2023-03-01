@@ -238,7 +238,7 @@ export class MarkdownBlock extends Module implements PageBlock {
         await this.setData({
             content: this.mdEditor?.getMarkdownValue() || ''
         });
-        const builder = this.parent.closest('ide-toolbar') as any;
+        const builder = this.parent?.closest('ide-toolbar') as any;
         builder && builder.setData({content: this.data});
     }
 
@@ -249,7 +249,7 @@ export class MarkdownBlock extends Module implements PageBlock {
         await this.setData({
             content: this.data
         });
-        const builder = this.parent.closest('ide-toolbar') as any;
+        const builder = this.parent?.closest('ide-toolbar') as any;
         builder && builder.setData({content: this.data});
     }
 
