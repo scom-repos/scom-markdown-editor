@@ -1,0 +1,27 @@
+{
+    "name": "@markdown-editor/main",
+    "version": "0.1.0",
+    "env": "",
+    "moduleDir": "modules",
+    "main": "@markdown-editor/main",
+    "modules": {
+        "@markdown-editor/main": {
+            "path": "main",
+            "dependencies": [
+                "@markdown-editor/global",
+                "@markdown-editor/store"
+            ]
+        },
+        "@markdown-editor/global": {
+            "path": "global",
+            "dependencies": []
+        },
+        "@markdown-editor/store": {
+            "path": "store",
+            "dependencies": []
+        }
+    },
+    "aiAPIUrl": "https://api.openai.com/v1/completions",
+    "aiAPIKey": "",
+    "dependencies": {}
+}
