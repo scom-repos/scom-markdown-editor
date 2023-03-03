@@ -103,6 +103,8 @@ define("@markdown-editor/main", ["require", "exports", "@ijstech/components", "@
             this.defaultEdit = true;
             this.isEditing = false;
             this.isStopped = false;
+            this.oldContent = '';
+            this.content = '';
             if (options) {
                 store_2.setDataFromSCConfig(options);
             }
@@ -116,6 +118,16 @@ define("@markdown-editor/main", ["require", "exports", "@ijstech/components", "@
         }
         getConfigSchema() {
             return configSchema;
+        }
+        preventDrag(builder, value) {
+            if (!builder)
+                return;
+            const section = builder.closest('ide-section');
+            section && (section.style.height = 'auto');
+            if (value)
+                builder.classList.add('is-editing');
+            else
+                builder.classList.remove('is-editing');
         }
         getActions() {
             const actions = [
@@ -147,14 +159,30 @@ define("@markdown-editor/main", ["require", "exports", "@ijstech/components", "@
                     command: (builder, userInputData) => {
                         return {
                             execute: () => {
-                                this.confirm();
-                                if (builder) {
-                                    builder.classList.remove('is-editing');
-                                    const section = builder.closest('ide-section');
-                                    section && (section.style.height = 'auto');
+                                var _a;
+                                const isChanged = ((_a = this.mdEditor) === null || _a === void 0 ? void 0 : _a.getMarkdownValue()) !== this.data;
+                                console.log(this.oldContent, isChanged, this.data);
+                                if (this.oldContent && !isChanged && this.mdEditor) {
+                                    this.mdEditor.value = this.oldContent;
                                 }
+                                this.oldData = this.data;
+                                this.confirm();
+                                if (this.mdViewer)
+                                    this.mdViewer.value = this.data;
+                                this.preventDrag(builder, false);
                             },
                             undo: () => {
+                                var _a, _b;
+                                const currentData = this.data;
+                                this.edit();
+                                this.oldContent = (((_a = this.mdEditor) === null || _a === void 0 ? void 0 : _a.getMarkdownValue()) || '');
+                                if (this.mdEditor)
+                                    this.mdEditor.value = this.oldData;
+                                this.setData({ content: this.oldData });
+                                this.oldData = currentData;
+                                this.content = (((_b = this.mdEditor) === null || _b === void 0 ? void 0 : _b.getMarkdownValue()) || '');
+                                this.preventDrag(builder, true);
+                                builder && builder.setData({ content: this.data });
                             },
                             redo: () => { }
                         };
@@ -168,14 +196,16 @@ define("@markdown-editor/main", ["require", "exports", "@ijstech/components", "@
                     command: (builder, userInputData) => {
                         return {
                             execute: () => {
+                                var _a;
+                                this.oldData = ((_a = this.mdEditor) === null || _a === void 0 ? void 0 : _a.getMarkdownValue()) || '';
                                 this.discard();
-                                if (builder) {
-                                    builder.classList.remove('is-editing');
-                                    const section = builder.closest('ide-section');
-                                    section && (section.style.height = 'auto');
-                                }
+                                this.preventDrag(builder, false);
                             },
                             undo: () => {
+                                this.edit();
+                                if (this.mdEditor)
+                                    this.mdEditor.value = this.oldData;
+                                this.preventDrag(builder, true);
                             },
                             redo: () => { }
                         };

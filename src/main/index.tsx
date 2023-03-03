@@ -8,7 +8,8 @@ import {
     HStack,
     Container,
     Button,
-    Styles
+    Styles,
+    Control
 } from '@ijstech/components';
 import './index.css';
 import { IConfigSchema, PageBlock } from '@markdown-editor/global';
@@ -40,6 +41,7 @@ const configSchema: IConfigSchema = {
 @customModule
 export class MarkdownBlock extends Module implements PageBlock {
     private data: any;
+    private oldData: any;
     private pnlMarkdownEditor: VStack;
     private pnlEditor: Panel;
     private pnlViewer: Panel;
@@ -54,6 +56,7 @@ export class MarkdownBlock extends Module implements PageBlock {
     defaultEdit: boolean = true;
     private isEditing: boolean = false;
     private isStopped: boolean = false;
+    private oldContent: string = '';
 
     readonly onEdit: () => Promise<void>;
     readonly onConfirm: () => Promise<void>;
@@ -78,6 +81,16 @@ export class MarkdownBlock extends Module implements PageBlock {
         return configSchema;
     }
 
+    private preventDrag(builder: Control, value: boolean) {
+        if (!builder) return;
+        const section = builder.closest('ide-section') as Control;
+        section && (section.style.height = 'auto');
+        if (value)
+            builder.classList.add('is-editing');
+        else
+            builder.classList.remove('is-editing');
+    }
+
     getActions() {
         const actions = [
             {
@@ -88,11 +101,7 @@ export class MarkdownBlock extends Module implements PageBlock {
                     return {
                         execute: () => {
                             this.edit();
-                            if (builder) {
-                                builder.classList.add('is-editing');
-                                const section = builder.closest('ide-section');
-                                section && (section.style.height = 'auto');
-                            }
+                            this.preventDrag(builder, true);
                         },
                         undo: () => {
                         },
@@ -108,14 +117,23 @@ export class MarkdownBlock extends Module implements PageBlock {
                 command: (builder: any, userInputData: any) => {
                     return {
                         execute: () => {
+                            const isChanged = this.mdEditor?.getMarkdownValue() !== this.data;
+                            if (this.oldContent && !isChanged && this.mdEditor)
+                                this.mdEditor.value = this.oldContent;
+                            this.oldData = this.data;
                             this.confirm();
-                            if (builder) {
-                                builder.classList.remove('is-editing');
-                                const section = builder.closest('ide-section');
-                                section && (section.style.height = 'auto');
-                            }
+                            if (this.mdViewer) this.mdViewer.value = this.data;
+                            this.preventDrag(builder, false);
                         },
                         undo: () => {
+                            const currentData = this.data;
+                            this.edit();
+                            this.oldContent = (this.mdEditor?.getMarkdownValue() || '');
+                            if (this.mdEditor) this.mdEditor.value = this.oldData;
+                            this.setData({ content: this.oldData });
+                            this.oldData = currentData;
+                            this.preventDrag(builder, true);
+                            builder && builder.setData({content: this.data});
                         },
                         redo: () => {}
                     }
@@ -129,14 +147,14 @@ export class MarkdownBlock extends Module implements PageBlock {
                 command: (builder: any, userInputData: any) => {
                     return {
                         execute: () => {
+                            this.oldData = this.mdEditor?.getMarkdownValue() || '';
                             this.discard();
-                            if (builder) {
-                                builder.classList.remove('is-editing');
-                                const section = builder.closest('ide-section');
-                                section && (section.style.height = 'auto');
-                            }
+                            this.preventDrag(builder, false);
                         },
                         undo: () => {
+                            this.edit();
+                            if (this.mdEditor) this.mdEditor.value = this.oldData;
+                            this.preventDrag(builder, true);
                         },
                         redo: () => {}
                     }
