@@ -120,7 +120,29 @@ declare module "@scom/scom-markdown-editor" {
         init(): void;
         getConfigSchema(): IConfigSchema;
         private preventDrag;
+        getEmbedderActions(): {
+            name: string;
+            icon: string;
+            visible: () => boolean;
+            command: (builder: any, userInputData: any) => {
+                execute: () => void;
+                undo: () => void;
+                redo: () => void;
+            };
+            userInputDataSchema: {};
+        }[];
         getActions(): {
+            name: string;
+            icon: string;
+            visible: () => boolean;
+            command: (builder: any, userInputData: any) => {
+                execute: () => void;
+                undo: () => void;
+                redo: () => void;
+            };
+            userInputDataSchema: {};
+        }[];
+        _getActions(): {
             name: string;
             icon: string;
             visible: () => boolean;
