@@ -11,7 +11,8 @@ import {
     Styles,
     Control,
     customElements,
-    ControlElement
+    ControlElement,
+    IDataSchema
 } from '@ijstech/components';
 import './index.css';
 import { IConfigSchema, PageBlock } from './interface';
@@ -123,7 +124,6 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
             const finalWidth = width ? (typeof this.width === 'string' ? width : `${width}px`) : '100%';
             const finalHeight = height ? (typeof this.height === 'string' ? height : `${height}px`) : 'auto';
             this.setTag({width: finalWidth, height: finalHeight});
-            height && (this.height = 'auto');
         }
         this.editMode = this.getAttribute('editMode', true, false);
         const data = this.getAttribute('data', true, '');
@@ -145,7 +145,15 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
             builder.classList.remove('is-editing');
     }
 
+    getEmbedderActions() {
+        return this._getActions()
+    }
+
     getActions() {
+        return this._getActions()
+    }
+
+    _getActions() {
         const actions = [
             {
                 name: 'Edit',
@@ -296,6 +304,7 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
         let { width, height, background } = value;
         width = typeof width === 'string' ? width : `${width}px`;
         height = typeof height === 'string' ? height : `${height}px`;
+        if (height !== 'auto') this.height = 'auto';
         this.tag = { width, height, background };
         this.updateMarkdown(value);
     }
