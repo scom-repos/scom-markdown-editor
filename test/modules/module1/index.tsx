@@ -15,8 +15,9 @@ export default class Module1 extends Module {
         this.editor = await ScomMarkdownEditor.create({
            width: 1170,
            height: 200,
-           data: 'New text',
-           editMode: true
+           data: '<h3>New text</h3>',
+           editMode: true,
+           theme: "dark"
         });
         this.mainStack.appendChild(this.editor);
     }
@@ -27,6 +28,7 @@ export default class Module1 extends Module {
                 <i-scom-markdown-editor
                     width={1180}
                     editMode={true}
+                    theme="light"
                 ></i-scom-markdown-editor>
             </i-vstack>
         )

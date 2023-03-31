@@ -78,9 +78,11 @@ declare module "@scom/scom-markdown-editor" {
         height?: string;
         background?: string;
     }
+    type ThemeType = 'dark' | 'light';
     interface ScomMarkdownElement extends ControlElement {
         data?: string;
         editMode?: boolean;
+        theme?: ThemeType;
     }
     global {
         namespace JSX {
@@ -108,6 +110,7 @@ declare module "@scom/scom-markdown-editor" {
         private oldContent;
         private _data;
         private _editMode;
+        private _theme;
         readonly onEdit: () => Promise<void>;
         readonly onConfirm: () => Promise<void>;
         readonly onDiscard: () => Promise<void>;
@@ -117,6 +120,8 @@ declare module "@scom/scom-markdown-editor" {
         set data(value: string);
         get editMode(): boolean;
         set editMode(value: boolean);
+        get theme(): ThemeType;
+        set theme(value: ThemeType);
         init(): void;
         getConfigSchema(): IConfigSchema;
         private preventDrag;

@@ -161,6 +161,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             this.isStopped = false;
             this.oldContent = '';
             this._editMode = false;
+            this._theme = 'light';
             if (scconfig_json_1.default)
                 store_2.setDataFromSCConfig(scconfig_json_1.default);
         }
@@ -190,6 +191,14 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             if (this.pnlViewer)
                 this.pnlViewer.visible = !this.isEditing;
         }
+        get theme() {
+            return this._theme;
+        }
+        set theme(value) {
+            this._theme = value;
+            if (this.mdEditor)
+                this.mdEditor.theme = this.theme;
+        }
         init() {
             super.init();
             const width = this.getAttribute('width', true);
@@ -199,6 +208,9 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                 const finalHeight = height ? (typeof this.height === 'string' ? height : `${height}px`) : 'auto';
                 this.setTag({ width: finalWidth, height: finalHeight });
             }
+            const themeAttr = this.getAttribute('theme', true);
+            if (themeAttr)
+                this.theme = themeAttr;
             this.editMode = this.getAttribute('editMode', true, false);
             const data = this.getAttribute('data', true, '');
             (!data) && this.renderEmptyPnl();
@@ -316,7 +328,6 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             if (this.mdEditor) {
                 if (width)
                     this.mdEditor.width = width;
-                console.log(height, this.mdEditor.height);
                 if (height)
                     this.mdEditor.height = height;
             }
@@ -417,11 +428,13 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
         async renderEditor() {
             const { width = '100%', height = "auto" } = this.tag;
             if (!this.mdEditor) {
+                console.log(this.theme);
                 this.mdEditor = await components_2.MarkdownEditor.create({
                     value: this.data,
                     mode: 'wysiwyg',
                     width,
-                    height
+                    height,
+                    theme: this.theme
                 });
                 this.mdEditor.display = 'block';
                 this.pnlEditor.clearInnerHTML();

@@ -11,8 +11,7 @@ import {
     Styles,
     Control,
     customElements,
-    ControlElement,
-    IDataSchema
+    ControlElement
 } from '@ijstech/components';
 import './index.css';
 import { IConfigSchema, PageBlock } from './interface';
@@ -41,10 +40,11 @@ const configSchema: IConfigSchema = {
         }
     }
 }
-
+type ThemeType = 'dark'|'light'
 interface ScomMarkdownElement extends ControlElement {
     data?: string;
     editMode?: boolean;
+    theme?: ThemeType
 }
 
 declare global {
@@ -77,6 +77,7 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
 
     private _data: string;
     private _editMode: boolean = false;
+    private _theme: ThemeType = 'light';
 
     readonly onEdit: () => Promise<void>;
     readonly onConfirm: () => Promise<void>;
@@ -116,6 +117,15 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
             this.pnlViewer.visible = !this.isEditing;
     }
 
+    get theme() {
+        return this._theme
+    }
+    set theme(value: ThemeType) {
+        this._theme = value;
+        if (this.mdEditor)
+            this.mdEditor.theme = this.theme
+    }
+
     init() {
         super.init();
         const width = this.getAttribute('width', true);
@@ -125,6 +135,8 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
             const finalHeight = height ? (typeof this.height === 'string' ? height : `${height}px`) : 'auto';
             this.setTag({width: finalWidth, height: finalHeight});
         }
+        const themeAttr = this.getAttribute('theme', true);
+        if (themeAttr) this.theme = themeAttr
         this.editMode = this.getAttribute('editMode', true, false);
         const data = this.getAttribute('data', true, '');
         (!data) && this.renderEmptyPnl();
@@ -240,7 +252,6 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
         }
         if (this.mdEditor) {
             if (width) this.mdEditor.width = width;
-            console.log(height, this.mdEditor.height);
             if (height) this.mdEditor.height = height;
         }
         if (this.mdViewer) {
@@ -348,11 +359,13 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
     async renderEditor() {
         const { width = '100%', height = "auto" } = this.tag;
         if (!this.mdEditor) {
+            console.log(this.theme)
             this.mdEditor = await MarkdownEditor.create({
                 value: this.data,
                 mode: 'wysiwyg',
                 width,
-                height
+                height,
+                theme: this.theme
             });
             this.mdEditor.display = 'block';
             this.pnlEditor.clearInnerHTML();
