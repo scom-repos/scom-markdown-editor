@@ -123,7 +123,9 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
     set theme(value: ThemeType) {
         this._theme = value;
         if (this.mdEditor)
-            this.mdEditor.theme = this.theme
+            this.mdEditor.theme = value
+        if (this.mdViewer)
+            this.mdViewer.theme = value
     }
 
     init() {
@@ -294,7 +296,8 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
                 viewer: true,
                 value: this.data,
                 width,
-                height
+                height,
+                theme: this.theme
             });
             this.mdViewer.display = 'block';
             if (height) this.mdViewer.style.height = height;
@@ -359,7 +362,6 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
     async renderEditor() {
         const { width = '100%', height = "auto" } = this.tag;
         if (!this.mdEditor) {
-            console.log(this.theme)
             this.mdEditor = await MarkdownEditor.create({
                 value: this.data,
                 mode: 'wysiwyg',

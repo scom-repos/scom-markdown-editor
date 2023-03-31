@@ -197,7 +197,9 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
         set theme(value) {
             this._theme = value;
             if (this.mdEditor)
-                this.mdEditor.theme = this.theme;
+                this.mdEditor.theme = value;
+            if (this.mdViewer)
+                this.mdViewer.theme = value;
         }
         init() {
             super.init();
@@ -365,7 +367,8 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                     viewer: true,
                     value: this.data,
                     width,
-                    height
+                    height,
+                    theme: this.theme
                 });
                 this.mdViewer.display = 'block';
                 if (height)
@@ -428,7 +431,6 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
         async renderEditor() {
             const { width = '100%', height = "auto" } = this.tag;
             if (!this.mdEditor) {
-                console.log(this.theme);
                 this.mdEditor = await components_2.MarkdownEditor.create({
                     value: this.data,
                     mode: 'wysiwyg',
