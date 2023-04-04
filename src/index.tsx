@@ -69,6 +69,7 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
     private btnStop: Button;
     private btnSend: Button;
     private pnlWaiting: Panel;
+    private oldTag: any = {};
     tag: any = {};
     defaultEdit: boolean = true;
     private isEditing: boolean = false;
@@ -150,10 +151,23 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
     }
 
     getActions() {
-        return this._getActions()
+        const themeSchema: IDataSchema = {
+            type: 'object',
+            properties: {
+                textAlign: {
+                    type: 'string',
+                    enum: [
+                        'left',
+                        'center',
+                        'right'
+                    ]
+                }
+            }
+        }
+        return this._getActions(themeSchema)
     }
 
-    _getActions() {
+    _getActions(themeSchema?: IDataSchema) {
         const actions = [
             {
                 name: 'Edit',
@@ -171,6 +185,28 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
                     }
                 },
                 userInputDataSchema: {}
+            },
+            {
+                name: 'Theme Settings',
+                icon: 'palette',
+                visible: () => !this.isEditing && themeSchema != null && themeSchema != undefined,
+                command: (builder: any, userInputData: any) => {
+                    return {
+                        execute: async () => {
+                            if (!userInputData) return;
+                            this.oldTag = { ...this.tag };
+                            this.setTag(userInputData);
+                            if (builder) builder.setTag(userInputData);
+                        },
+                        undo: () => {
+                            if (!userInputData) return;
+                            this.setTag(this.oldTag);
+                            if (builder) builder.setTag(this.oldTag);
+                        },
+                        redo: () => { }
+                    }
+                },
+                userInputDataSchema: themeSchema
             },
             {
                 name: 'Confirm',
@@ -270,7 +306,7 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
 
     async setData(value: any) {
         this._data = value.content || '';
-        this.setTag({width: value.width, height: value.height});
+        // this.setTag({width: value.width, height: value.height});
         this.pnlEditor.visible = this.pnlAIPrompt.visible = this.isEditing;
         this.pnlViewer.visible = !this.isEditing;
         if (!this.data) {
@@ -301,11 +337,12 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
     }
 
     async setTag(value: any) {
-        let { width, height, background } = value;
+        let { width, height, background, textAlign } = value;
         width = typeof width === 'string' ? width : `${width}px`;
         height = typeof height === 'string' ? height : `${height}px`;
         if (height !== 'auto') this.height = 'auto';
-        this.tag = { width, height, background };
+        this.tag = { width, height, background, textAlign };
+        this.pnlViewer.style.textAlign = textAlign || "left";
         this.updateMarkdown(value);
     }
 
