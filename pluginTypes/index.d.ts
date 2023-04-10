@@ -70,7 +70,7 @@ declare module "@scom/scom-markdown-editor/scconfig.json.ts" {
 }
 /// <amd-module name="@scom/scom-markdown-editor" />
 declare module "@scom/scom-markdown-editor" {
-    import { Module, Container, ControlElement } from '@ijstech/components';
+    import { Module, Container, ControlElement, IDataSchema } from '@ijstech/components';
     import "@scom/scom-markdown-editor/index.css.ts";
     import { IConfigSchema, PageBlock } from "@scom/scom-markdown-editor/interface.ts";
     export interface IConfigData {
@@ -103,6 +103,7 @@ declare module "@scom/scom-markdown-editor" {
         private btnStop;
         private btnSend;
         private pnlWaiting;
+        private oldTag;
         tag: any;
         defaultEdit: boolean;
         private isEditing;
@@ -125,7 +126,7 @@ declare module "@scom/scom-markdown-editor" {
         init(): void;
         getConfigSchema(): IConfigSchema;
         private preventDrag;
-        getEmbedderActions(): {
+        getEmbedderActions(): ({
             name: string;
             icon: string;
             visible: () => boolean;
@@ -135,8 +136,18 @@ declare module "@scom/scom-markdown-editor" {
                 redo: () => void;
             };
             userInputDataSchema: {};
-        }[];
-        getActions(): {
+        } | {
+            name: string;
+            icon: string;
+            visible: () => boolean;
+            command: (builder: any, userInputData: any) => {
+                execute: () => Promise<void>;
+                undo: () => void;
+                redo: () => void;
+            };
+            userInputDataSchema: IDataSchema;
+        })[];
+        getActions(): ({
             name: string;
             icon: string;
             visible: () => boolean;
@@ -146,8 +157,18 @@ declare module "@scom/scom-markdown-editor" {
                 redo: () => void;
             };
             userInputDataSchema: {};
-        }[];
-        _getActions(): {
+        } | {
+            name: string;
+            icon: string;
+            visible: () => boolean;
+            command: (builder: any, userInputData: any) => {
+                execute: () => Promise<void>;
+                undo: () => void;
+                redo: () => void;
+            };
+            userInputDataSchema: IDataSchema;
+        })[];
+        _getActions(themeSchema?: IDataSchema): ({
             name: string;
             icon: string;
             visible: () => boolean;
@@ -157,7 +178,17 @@ declare module "@scom/scom-markdown-editor" {
                 redo: () => void;
             };
             userInputDataSchema: {};
-        }[];
+        } | {
+            name: string;
+            icon: string;
+            visible: () => boolean;
+            command: (builder: any, userInputData: any) => {
+                execute: () => Promise<void>;
+                undo: () => void;
+                redo: () => void;
+            };
+            userInputDataSchema: IDataSchema;
+        })[];
         onConfigSave(config: IConfigData): Promise<void>;
         updateMarkdown(config: IConfigData): void;
         getData(): {

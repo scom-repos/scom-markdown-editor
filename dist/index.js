@@ -155,6 +155,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
     let ScomMarkdownEditor = class ScomMarkdownEditor extends components_2.Module {
         constructor(parent, options) {
             super(parent, options);
+            this.oldTag = {};
             this.tag = {};
             this.defaultEdit = true;
             this.isEditing = false;
@@ -235,9 +236,22 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             return this._getActions();
         }
         getActions() {
-            return this._getActions();
+            const themeSchema = {
+                type: 'object',
+                properties: {
+                    textAlign: {
+                        type: 'string',
+                        enum: [
+                            'left',
+                            'center',
+                            'right'
+                        ]
+                    }
+                }
+            };
+            return this._getActions(themeSchema);
         }
-        _getActions() {
+        _getActions(themeSchema) {
             const actions = [
                 {
                     name: 'Edit',
@@ -255,6 +269,32 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                         };
                     },
                     userInputDataSchema: {}
+                },
+                {
+                    name: 'Theme Settings',
+                    icon: 'palette',
+                    visible: () => !this.isEditing && themeSchema != null && themeSchema != undefined,
+                    command: (builder, userInputData) => {
+                        return {
+                            execute: async () => {
+                                if (!userInputData)
+                                    return;
+                                this.oldTag = Object.assign({}, this.tag);
+                                this.setTag(userInputData);
+                                if (builder)
+                                    builder.setTag(userInputData);
+                            },
+                            undo: () => {
+                                if (!userInputData)
+                                    return;
+                                this.setTag(this.oldTag);
+                                if (builder)
+                                    builder.setTag(this.oldTag);
+                            },
+                            redo: () => { }
+                        };
+                    },
+                    userInputDataSchema: themeSchema
                 },
                 {
                     name: 'Confirm',
@@ -353,7 +393,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
         }
         async setData(value) {
             this._data = value.content || '';
-            this.setTag({ width: value.width, height: value.height });
+            // this.setTag({width: value.width, height: value.height});
             this.pnlEditor.visible = this.pnlAIPrompt.visible = this.isEditing;
             this.pnlViewer.visible = !this.isEditing;
             if (!this.data) {
@@ -386,12 +426,13 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             return this.tag;
         }
         async setTag(value) {
-            let { width, height, background } = value;
+            let { width, height, background, textAlign } = value;
             width = typeof width === 'string' ? width : `${width}px`;
             height = typeof height === 'string' ? height : `${height}px`;
             if (height !== 'auto')
                 this.height = 'auto';
-            this.tag = { width, height, background };
+            this.tag = { width, height, background, textAlign };
+            this.pnlViewer.style.textAlign = textAlign || "left";
             this.updateMarkdown(value);
         }
         async edit() {
