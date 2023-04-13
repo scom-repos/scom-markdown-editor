@@ -11,7 +11,8 @@ import {
     Styles,
     Control,
     customElements,
-    ControlElement
+    ControlElement,
+    IDataSchema
 } from '@ijstech/components';
 import './index.css';
 import { IConfigSchema, PageBlock } from './interface';
