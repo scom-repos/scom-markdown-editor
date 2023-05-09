@@ -72,7 +72,6 @@ declare module "@scom/scom-markdown-editor/scconfig.json.ts" {
 declare module "@scom/scom-markdown-editor" {
     import { Module, Container, ControlElement, IDataSchema } from '@ijstech/components';
     import "@scom/scom-markdown-editor/index.css.ts";
-    import { IConfigSchema, PageBlock } from "@scom/scom-markdown-editor/interface.ts";
     export interface IConfigData {
         width?: string;
         height?: string;
@@ -91,7 +90,7 @@ declare module "@scom/scom-markdown-editor" {
             }
         }
     }
-    export default class ScomMarkdownEditor extends Module implements PageBlock {
+    export default class ScomMarkdownEditor extends Module {
         private oldData;
         private pnlMarkdownEditor;
         private pnlEditor;
@@ -124,89 +123,59 @@ declare module "@scom/scom-markdown-editor" {
         get theme(): ThemeType;
         set theme(value: ThemeType);
         init(): void;
-        getConfigSchema(): IConfigSchema;
         private preventDrag;
-        getEmbedderActions(): ({
-            name: string;
-            icon: string;
-            visible: () => boolean;
-            command: (builder: any, userInputData: any) => {
-                execute: () => void;
-                undo: () => void;
-                redo: () => void;
-            };
-            userInputDataSchema: {};
-        } | {
-            name: string;
-            icon: string;
-            visible: () => boolean;
-            command: (builder: any, userInputData: any) => {
-                execute: () => Promise<void>;
-                undo: () => void;
-                redo: () => void;
-            };
-            userInputDataSchema: IDataSchema;
-        })[];
-        getActions(): ({
-            name: string;
-            icon: string;
-            visible: () => boolean;
-            command: (builder: any, userInputData: any) => {
-                execute: () => void;
-                undo: () => void;
-                redo: () => void;
-            };
-            userInputDataSchema: {};
-        } | {
-            name: string;
-            icon: string;
-            visible: () => boolean;
-            command: (builder: any, userInputData: any) => {
-                execute: () => Promise<void>;
-                undo: () => void;
-                redo: () => void;
-            };
-            userInputDataSchema: IDataSchema;
-        })[];
-        _getActions(themeSchema?: IDataSchema): ({
-            name: string;
-            icon: string;
-            visible: () => boolean;
-            command: (builder: any, userInputData: any) => {
-                execute: () => void;
-                undo: () => void;
-                redo: () => void;
-            };
-            userInputDataSchema: {};
-        } | {
-            name: string;
-            icon: string;
-            visible: () => boolean;
-            command: (builder: any, userInputData: any) => {
-                execute: () => Promise<void>;
-                undo: () => void;
-                redo: () => void;
-            };
-            userInputDataSchema: IDataSchema;
-        })[];
-        onConfigSave(config: IConfigData): Promise<void>;
-        updateMarkdown(config: IConfigData): void;
-        getData(): {
-            content: string;
-        };
+        private _getActions;
+        private updateMarkdown;
+        private getData;
         private renderEmptyPnl;
-        setData(value: any): Promise<void>;
-        getTag(): any;
-        setTag(value: any): Promise<void>;
-        edit(): Promise<void>;
-        confirm(): Promise<void>;
-        discard(): Promise<void>;
-        validate(): boolean;
-        renderEditor(): Promise<void>;
+        private setData;
+        private getTag;
+        private setTag;
+        getConfigurators(): ({
+            name: string;
+            target: string;
+            getActions: () => ({
+                name: string;
+                icon: string;
+                visible: () => boolean;
+                command: (builder: any, userInputData: any) => {
+                    execute: () => void;
+                    undo: () => void;
+                    redo: () => void;
+                };
+                userInputDataSchema: {};
+            } | {
+                name: string;
+                icon: string;
+                visible: () => boolean;
+                command: (builder: any, userInputData: any) => {
+                    execute: () => Promise<void>;
+                    undo: () => void;
+                    redo: () => void;
+                };
+                userInputDataSchema: IDataSchema;
+            })[];
+            getData: any;
+            setData: any;
+            getTag: any;
+            setTag: any;
+        } | {
+            name: string;
+            target: string;
+            getData: any;
+            setData: any;
+            getTag: any;
+            setTag: any;
+            getActions?: undefined;
+        })[];
+        private edit;
+        private confirm;
+        private discard;
+        private renderEditor;
         private toggleStopBtn;
         private readAllChunks;
-        sendAIPrompt(): Promise<void>;
-        stopAPIPrompt(): Promise<void>;
+        private sendAIPrompt;
+        private stopAPIPrompt;
         render(): any;
     }
 }
