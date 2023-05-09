@@ -138,20 +138,6 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_2.Styles.Theme.ThemeVars;
-    const configSchema = {
-        type: 'object',
-        properties: {
-            width: {
-                type: 'string',
-            },
-            height: {
-                type: 'string',
-            },
-            background: {
-                type: 'string',
-            }
-        }
-    };
     let ScomMarkdownEditor = class ScomMarkdownEditor extends components_2.Module {
         constructor(parent, options) {
             super(parent, options);
@@ -219,9 +205,9 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             (!data) && this.renderEmptyPnl();
             this.data = data;
         }
-        getConfigSchema() {
-            return configSchema;
-        }
+        // getConfigSchema() {
+        //     return configSchema;
+        // }
         preventDrag(builder, value) {
             if (!builder)
                 return;
@@ -231,25 +217,6 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                 builder.classList.add('is-editing');
             else
                 builder.classList.remove('is-editing');
-        }
-        getEmbedderActions() {
-            return this._getActions();
-        }
-        getActions() {
-            const themeSchema = {
-                type: 'object',
-                properties: {
-                    textAlign: {
-                        type: 'string',
-                        enum: [
-                            'left',
-                            'center',
-                            'right'
-                        ]
-                    }
-                }
-            };
-            return this._getActions(themeSchema);
         }
         _getActions(themeSchema) {
             const actions = [
@@ -356,10 +323,10 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             ];
             return actions;
         }
-        async onConfigSave(config) {
-            this.tag = config;
-            this.updateMarkdown(config);
-        }
+        // async onConfigSave(config: IConfigData) {
+        //     this.tag = config;
+        //     this.updateMarkdown(config);
+        // }
         updateMarkdown(config) {
             if (!config)
                 return;
@@ -435,6 +402,42 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             this.pnlViewer.style.textAlign = textAlign || "left";
             this.updateMarkdown(value);
         }
+        getConfigurators() {
+            return [
+                {
+                    name: 'Builder Configurator',
+                    target: 'Builders',
+                    getActions: () => {
+                        const themeSchema = {
+                            type: 'object',
+                            properties: {
+                                textAlign: {
+                                    type: 'string',
+                                    enum: [
+                                        'left',
+                                        'center',
+                                        'right'
+                                    ]
+                                }
+                            }
+                        };
+                        return this._getActions(themeSchema);
+                    },
+                    getData: this.getData.bind(this),
+                    setData: this.setData.bind(this),
+                    getTag: this.getTag.bind(this),
+                    setTag: this.setTag.bind(this)
+                },
+                {
+                    name: 'Emdedder Configurator',
+                    target: 'Embedders',
+                    getData: this.getData.bind(this),
+                    setData: this.setData.bind(this),
+                    getTag: this.getTag.bind(this),
+                    setTag: this.setTag.bind(this)
+                }
+            ];
+        }
         async edit() {
             // this.pnlEditor.visible = true;
             // this.pnlViewer.visible = false;
@@ -463,12 +466,12 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             const builder = (_a = this.parent) === null || _a === void 0 ? void 0 : _a.closest('ide-toolbar');
             builder && builder.setData({ content: this.data });
         }
-        validate() {
-            if (this.mdEditor && this.mdEditor.getMarkdownValue()) {
-                return true;
-            }
-            return false;
-        }
+        // private validate() {
+        //     if (this.mdEditor && this.mdEditor.getMarkdownValue()) {
+        //         return true;
+        //     }
+        //     return false;
+        // }
         async renderEditor() {
             const { width = '100%', height = "auto" } = this.tag;
             if (!this.mdEditor) {

@@ -27,20 +27,20 @@ export interface IConfigData {
     background?: string;
 }
 
-const configSchema: IConfigSchema = {
-    type: 'object',
-    properties: {
-        width: {
-            type: 'string',
-        },
-        height: {
-            type: 'string',
-        },
-        background: {
-            type: 'string',
-        }
-    }
-}
+// const configSchema: IConfigSchema = {
+//     type: 'object',
+//     properties: {
+//         width: {
+//             type: 'string',
+//         },
+//         height: {
+//             type: 'string',
+//         },
+//         background: {
+//             type: 'string',
+//         }
+//     }
+// }
 type ThemeType = 'dark'|'light'
 interface ScomMarkdownElement extends ControlElement {
     data?: string;
@@ -58,7 +58,7 @@ declare global {
   
 @customModule
 @customElements('i-scom-markdown-editor')
-export default class ScomMarkdownEditor extends Module implements PageBlock {
+export default class ScomMarkdownEditor extends Module {
     private oldData: any;
     private pnlMarkdownEditor: VStack;
     private pnlEditor: Panel;
@@ -147,9 +147,9 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
         this.data = data;
     }
 
-    getConfigSchema() {
-        return configSchema;
-    }
+    // getConfigSchema() {
+    //     return configSchema;
+    // }
 
     private preventDrag(builder: Control, value: boolean) {
         if (!builder) return;
@@ -161,28 +161,7 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
             builder.classList.remove('is-editing');
     }
 
-    getEmbedderActions() {
-        return this._getActions()
-    }
-
-    getActions() {
-        const themeSchema: IDataSchema = {
-            type: 'object',
-            properties: {
-                textAlign: {
-                    type: 'string',
-                    enum: [
-                        'left',
-                        'center',
-                        'right'
-                    ]
-                }
-            }
-        }
-        return this._getActions(themeSchema)
-    }
-
-    _getActions(themeSchema?: IDataSchema) {
+    private _getActions(themeSchema?: IDataSchema) {
         const actions = [
             {
                 name: 'Edit',
@@ -278,12 +257,12 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
         return actions;
     }
 
-    async onConfigSave(config: IConfigData) {
-        this.tag = config;
-        this.updateMarkdown(config);
-    }
+    // async onConfigSave(config: IConfigData) {
+    //     this.tag = config;
+    //     this.updateMarkdown(config);
+    // }
 
-    updateMarkdown(config: IConfigData) {
+    private updateMarkdown(config: IConfigData) {
         if (!config) return;
         const { width, height, background } = config;
         if (this.pnlMarkdownEditor) {
@@ -300,7 +279,7 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
         }
     }
 
-    getData() {
+    private getData() {
         return {
             content: this.data
         };
@@ -318,7 +297,7 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
             );
     }
 
-    async setData(value: any) {
+    private async setData(value: any) {
         this._data = value.content || '';
         // this.setTag({width: value.width, height: value.height});
         this.pnlEditor.visible = this.pnlAIPrompt.visible = this.isEditing;
@@ -347,11 +326,11 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
         }
     }
 
-    getTag() {
+    private getTag() {
         return this.tag;
     }
 
-    async setTag(value: any) {
+    private async setTag(value: any) {
         let { width, height, background, textAlign } = value;
         width = typeof width === 'string' ? width : `${width}px`;
         height = typeof height === 'string' ? height : `${height}px`;
@@ -361,14 +340,51 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
         this.updateMarkdown(value);
     }
 
-    async edit() {
+    getConfigurators() {
+        return [
+            {
+                name: 'Builder Configurator',
+                target: 'Builders',
+                getActions: () => {
+                    const themeSchema: IDataSchema = {
+                        type: 'object',
+                        properties: {
+                            textAlign: {
+                                type: 'string',
+                                enum: [
+                                    'left',
+                                    'center',
+                                    'right'
+                                ]
+                            }
+                        }
+                    }
+                    return this._getActions(themeSchema)
+                },
+                getData: this.getData.bind(this),
+                setData: this.setData.bind(this),
+                getTag: this.getTag.bind(this),
+                setTag: this.setTag.bind(this)
+            },
+            {
+                name: 'Emdedder Configurator',
+                target: 'Embedders',
+                getData: this.getData.bind(this),
+                setData: this.setData.bind(this),
+                getTag: this.getTag.bind(this),
+                setTag: this.setTag.bind(this)
+            }
+        ]
+    }
+
+    private async edit() {
         // this.pnlEditor.visible = true;
         // this.pnlViewer.visible = false;
         this.isEditing = true;
         this.renderEditor();
     }
 
-    async confirm() {
+    private async confirm() {
         // this.pnlEditor.visible = false;
         // this.pnlViewer.visible = true;
         this.isEditing = false;
@@ -379,7 +395,7 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
         builder && builder.setData({content: this.data});
     }
 
-    async discard() {
+    private async discard() {
         // this.pnlEditor.visible = false;
         // this.pnlViewer.visible = true;
         this.isEditing = false;
@@ -390,14 +406,14 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
         builder && builder.setData({content: this.data});
     }
 
-    validate() {
-        if (this.mdEditor && this.mdEditor.getMarkdownValue()) {
-            return true;
-        }
-        return false;
-    }
+    // private validate() {
+    //     if (this.mdEditor && this.mdEditor.getMarkdownValue()) {
+    //         return true;
+    //     }
+    //     return false;
+    // }
 
-    async renderEditor() {
+    private async renderEditor() {
         const { width = '100%', height = "auto" } = this.tag;
         if (!this.mdEditor) {
             this.mdEditor = await MarkdownEditor.create({
@@ -446,7 +462,7 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
         }
     }
 
-    async sendAIPrompt() {
+    private async sendAIPrompt() {
         this.isStopped = false;
         if (!this.inputAIPrompt.value) return;
         this.toggleStopBtn(true);
@@ -460,7 +476,7 @@ export default class ScomMarkdownEditor extends Module implements PageBlock {
         this.toggleStopBtn(false);
     }
 
-    async stopAPIPrompt() {
+    private async stopAPIPrompt() {
         this.isStopped = true;
         this.inputAIPrompt.value = '';
         this.toggleStopBtn(false);
