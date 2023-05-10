@@ -18,7 +18,7 @@ import './index.css';
 import { IConfigSchema, PageBlock } from './interface';
 import { fetchAIGeneratedText } from './API';
 import { setDataFromSCConfig } from './store';
-import scconfig from './scconfig.json';
+import scconfig from './data.json';
 const Theme = Styles.Theme.ThemeVars;
 
 export interface IConfigData {
@@ -362,7 +362,10 @@ export default class ScomMarkdownEditor extends Module {
                     return this._getActions(themeSchema)
                 },
                 getData: this.getData.bind(this),
-                setData: this.setData.bind(this),
+                setData: async (data: any) => {
+                    const defaultData = scconfig.defaultBuilderData as any;
+                    await this.setData({...defaultData, ...data})
+                },
                 getTag: this.getTag.bind(this),
                 setTag: this.setTag.bind(this)
             },

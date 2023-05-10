@@ -44,27 +44,14 @@ declare module "@scom/scom-markdown-editor/API.ts" {
     function fetchAIGeneratedText(prompt: string): Promise<ReadableStream<Uint8Array>>;
     export { fetchAIGeneratedText };
 }
-/// <amd-module name="@scom/scom-markdown-editor/scconfig.json.ts" />
-declare module "@scom/scom-markdown-editor/scconfig.json.ts" {
+/// <amd-module name="@scom/scom-markdown-editor/data.json.ts" />
+declare module "@scom/scom-markdown-editor/data.json.ts" {
     const _default: {
-        name: string;
-        version: string;
-        env: string;
-        moduleDir: string;
-        main: string;
-        modules: {
-            "@markdown-editor/main": {
-                path: string;
-            };
-            "@markdown-editor/global": {
-                path: string;
-            };
-            "@markdown-editor/store": {
-                path: string;
-            };
-        };
         aiAPIUrl: string;
         aiAPIKey: string;
+        defaultBuilderData: {
+            content: string;
+        };
     };
     export default _default;
 }
@@ -156,7 +143,7 @@ declare module "@scom/scom-markdown-editor" {
                 userInputDataSchema: IDataSchema;
             })[];
             getData: any;
-            setData: any;
+            setData: (data: any) => Promise<void>;
             getTag: any;
             setTag: any;
         } | {
