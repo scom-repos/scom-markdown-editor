@@ -109,32 +109,19 @@ define("@scom/scom-markdown-editor/API.ts", ["require", "exports", "@scom/scom-m
     }
     exports.fetchAIGeneratedText = fetchAIGeneratedText;
 });
-define("@scom/scom-markdown-editor/scconfig.json.ts", ["require", "exports"], function (require, exports) {
+define("@scom/scom-markdown-editor/data.json.ts", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    ///<amd-module name='@scom/scom-markdown-editor/scconfig.json.ts'/> 
+    ///<amd-module name='@scom/scom-markdown-editor/data.json.ts'/> 
     exports.default = {
-        "name": "@markdown-editor/main",
-        "version": "0.1.0",
-        "env": "",
-        "moduleDir": "src",
-        "main": "@markdown-editor/main",
-        "modules": {
-            "@markdown-editor/main": {
-                "path": "main"
-            },
-            "@markdown-editor/global": {
-                "path": "global"
-            },
-            "@markdown-editor/store": {
-                "path": "store"
-            }
-        },
         "aiAPIUrl": "https://api.openai.com/v1/completions",
-        "aiAPIKey": ""
+        "aiAPIKey": "",
+        "defaultBuilderData": {
+            "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla ac est sit amet urna consectetur semper. Curabitur posuere justo et nibh gravida, non tristique urna fringilla. Vestibulum id velit sed nisl tincidunt aliquet. Morbi viverra sapien eu purus venenatis, vitae vestibulum odio bibendum. Fusce volutpat gravida velit, id efficitur erat luctus id. Nullam malesuada hendrerit orci, a pretium tortor facilisis non. Sed euismod euismod felis. Nunc rhoncus diam in mi placerat efficitur. Aenean pulvinar neque ac nisl consequat, non lacinia lectus dapibus. Phasellus sagittis sagittis massa a luctus. Etiam auctor semper ullamcorper. Suspendisse potenti."
+        }
     };
 });
-define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components", "@scom/scom-markdown-editor/API.ts", "@scom/scom-markdown-editor/store.ts", "@scom/scom-markdown-editor/scconfig.json.ts", "@scom/scom-markdown-editor/index.css.ts"], function (require, exports, components_2, API_1, store_2, scconfig_json_1) {
+define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components", "@scom/scom-markdown-editor/API.ts", "@scom/scom-markdown-editor/store.ts", "@scom/scom-markdown-editor/data.json.ts", "@scom/scom-markdown-editor/index.css.ts"], function (require, exports, components_2, API_1, store_2, data_json_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_2.Styles.Theme.ThemeVars;
@@ -149,8 +136,8 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             this.oldContent = '';
             this._editMode = false;
             this._theme = 'light';
-            if (scconfig_json_1.default)
-                store_2.setDataFromSCConfig(scconfig_json_1.default);
+            if (data_json_1.default)
+                store_2.setDataFromSCConfig(data_json_1.default);
         }
         static async create(options, parent) {
             let self = new this(parent, options);
@@ -424,7 +411,10 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                         return this._getActions(themeSchema);
                     },
                     getData: this.getData.bind(this),
-                    setData: this.setData.bind(this),
+                    setData: async (data) => {
+                        const defaultData = data_json_1.default.defaultBuilderData;
+                        await this.setData(Object.assign(Object.assign({}, defaultData), data));
+                    },
                     getTag: this.getTag.bind(this),
                     setTag: this.setTag.bind(this)
                 },
