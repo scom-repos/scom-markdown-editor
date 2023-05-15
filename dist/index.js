@@ -158,7 +158,8 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             this._editMode = value;
             this.isEditing = value;
             if (this.pnlEditor) {
-                this.pnlEditor.visible = this.pnlAIPrompt.visible = this.isEditing;
+                this.pnlEditor.visible = this.isEditing;
+                // this.pnlEditor.visible = this.pnlAIPrompt.visible = this.isEditing;
                 if (!this.mdEditor)
                     this.renderEditor();
             }
@@ -348,7 +349,8 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
         async setData(value) {
             this._data = value.content || '';
             // this.setTag({width: value.width, height: value.height});
-            this.pnlEditor.visible = this.pnlAIPrompt.visible = this.isEditing;
+            this.pnlEditor.visible = this.isEditing;
+            // this.pnlEditor.visible = this.pnlAIPrompt.visible = this.isEditing;
             this.pnlViewer.visible = !this.isEditing;
             if (!this.data) {
                 this.renderEmptyPnl();
@@ -477,7 +479,8 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                 this.pnlEditor.appendChild(this.mdEditor);
             }
             this.mdEditor.value = this.data;
-            this.pnlEditor.visible = this.pnlAIPrompt.visible = this.isEditing;
+            this.pnlEditor.visible = this.isEditing;
+            // this.pnlEditor.visible = this.pnlAIPrompt.visible = this.isEditing;
             this.pnlViewer.visible = !this.isEditing;
         }
         toggleStopBtn(value) {
@@ -536,7 +539,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
         render() {
             return (this.$render("i-vstack", { id: "pnlMarkdownEditor" },
                 this.$render("i-panel", { id: 'pnlEditor', padding: { top: "0.5rem", bottom: "0.5rem", left: "1rem", right: "1rem" } }),
-                this.$render("i-hstack", { id: 'pnlAIPrompt', width: "100%", horizontalAlignment: "space-between", verticalAlignment: "center", padding: { top: "0.5rem", bottom: "0.5rem", left: "1rem", right: "1rem" } },
+                this.$render("i-hstack", { id: 'pnlAIPrompt', visible: false, width: "100%", horizontalAlignment: "space-between", verticalAlignment: "center", padding: { top: "0.5rem", bottom: "0.5rem", left: "1rem", right: "1rem" } },
                     this.$render("i-vstack", { width: "90%" },
                         this.$render("i-hstack", { id: "pnlWaiting", gap: 4, verticalAlignment: "center", minHeight: 32, width: "100%", height: "auto", border: { width: '0.5px', style: 'solid', color: Theme.divider }, background: { color: Theme.input.background }, padding: { left: '10px' }, visible: false },
                             this.$render("i-label", { font: { size: '1.5rem', color: Theme.input.fontColor }, caption: "AI is writing" }),

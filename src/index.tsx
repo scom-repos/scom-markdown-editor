@@ -41,7 +41,7 @@ export interface IConfigData {
 //         }
 //     }
 // }
-type ThemeType = 'dark'|'light'
+type ThemeType = 'dark' | 'light'
 interface ScomMarkdownElement extends ControlElement {
     data?: string;
     editMode?: boolean;
@@ -55,7 +55,7 @@ declare global {
         }
     }
 }
-  
+
 @customModule
 @customElements('i-scom-markdown-editor')
 export default class ScomMarkdownEditor extends Module {
@@ -88,10 +88,10 @@ export default class ScomMarkdownEditor extends Module {
     constructor(parent?: Container, options?: any) {
         super(parent, options);
         if (scconfig)
-          setDataFromSCConfig(scconfig);
+            setDataFromSCConfig(scconfig);
     }
 
-    static async create(options?: ScomMarkdownElement, parent?: Container){
+    static async create(options?: ScomMarkdownElement, parent?: Container) {
         let self = new this(parent, options);
         await self.ready();
         return self;
@@ -102,7 +102,7 @@ export default class ScomMarkdownEditor extends Module {
     }
     set data(value: string) {
         this._data = value;
-        this.setData({content: value});
+        this.setData({ content: value });
     }
 
     get editMode() {
@@ -112,7 +112,8 @@ export default class ScomMarkdownEditor extends Module {
         this._editMode = value;
         this.isEditing = value;
         if (this.pnlEditor) {
-            this.pnlEditor.visible = this.pnlAIPrompt.visible = this.isEditing;
+            this.pnlEditor.visible = this.isEditing;
+            // this.pnlEditor.visible = this.pnlAIPrompt.visible = this.isEditing;
             if (!this.mdEditor) this.renderEditor();
         }
         if (this.pnlViewer)
@@ -137,7 +138,7 @@ export default class ScomMarkdownEditor extends Module {
         if (width || height) {
             const finalWidth = width ? (typeof this.width === 'string' ? width : `${width}px`) : '100%';
             const finalHeight = height ? (typeof this.height === 'string' ? height : `${height}px`) : 'auto';
-            this.setTag({width: finalWidth, height: finalHeight});
+            this.setTag({ width: finalWidth, height: finalHeight });
         }
         const themeAttr = this.getAttribute('theme', true);
         if (themeAttr) this.theme = themeAttr
@@ -175,7 +176,7 @@ export default class ScomMarkdownEditor extends Module {
                         },
                         undo: () => {
                         },
-                        redo: () => {}
+                        redo: () => { }
                     }
                 },
                 userInputDataSchema: {}
@@ -225,9 +226,9 @@ export default class ScomMarkdownEditor extends Module {
                             this.setData({ content: this.oldData });
                             this.oldData = currentData;
                             this.preventDrag(builder, true);
-                            builder && builder.setData({content: this.data});
+                            builder && builder.setData({ content: this.data });
                         },
-                        redo: () => {}
+                        redo: () => { }
                     }
                 },
                 userInputDataSchema: {}
@@ -248,7 +249,7 @@ export default class ScomMarkdownEditor extends Module {
                             if (this.mdEditor) this.mdEditor.value = this.oldData;
                             this.preventDrag(builder, true);
                         },
-                        redo: () => {}
+                        redo: () => { }
                     }
                 },
                 userInputDataSchema: {}
@@ -292,7 +293,7 @@ export default class ScomMarkdownEditor extends Module {
                 <i-label
                     caption="Click to edit text"
                     opacity={0.5} display="block"
-                    padding={{top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem'}}
+                    padding={{ top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' }}
                 ></i-label>
             );
     }
@@ -300,7 +301,8 @@ export default class ScomMarkdownEditor extends Module {
     private async setData(value: any) {
         this._data = value.content || '';
         // this.setTag({width: value.width, height: value.height});
-        this.pnlEditor.visible = this.pnlAIPrompt.visible = this.isEditing;
+        this.pnlEditor.visible = this.isEditing;
+        // this.pnlEditor.visible = this.pnlAIPrompt.visible = this.isEditing;
         this.pnlViewer.visible = !this.isEditing;
         if (!this.data) {
             this.renderEmptyPnl();
@@ -364,7 +366,7 @@ export default class ScomMarkdownEditor extends Module {
                 getData: this.getData.bind(this),
                 setData: async (data: any) => {
                     const defaultData = scconfig.defaultBuilderData as any;
-                    await this.setData({...defaultData, ...data})
+                    await this.setData({ ...defaultData, ...data })
                 },
                 getTag: this.getTag.bind(this),
                 setTag: this.setTag.bind(this)
@@ -395,7 +397,7 @@ export default class ScomMarkdownEditor extends Module {
             content: this.mdEditor?.getMarkdownValue() || ''
         });
         const builder = this.parent?.closest('ide-toolbar') as any;
-        builder && builder.setData({content: this.data});
+        builder && builder.setData({ content: this.data });
     }
 
     private async discard() {
@@ -406,7 +408,7 @@ export default class ScomMarkdownEditor extends Module {
             content: this.data
         });
         const builder = this.parent?.closest('ide-toolbar') as any;
-        builder && builder.setData({content: this.data});
+        builder && builder.setData({ content: this.data });
     }
 
     // private validate() {
@@ -431,7 +433,8 @@ export default class ScomMarkdownEditor extends Module {
             this.pnlEditor.appendChild(this.mdEditor);
         }
         this.mdEditor.value = this.data;
-        this.pnlEditor.visible = this.pnlAIPrompt.visible = this.isEditing;
+        this.pnlEditor.visible = this.isEditing;
+        // this.pnlEditor.visible = this.pnlAIPrompt.visible = this.isEditing;
         this.pnlViewer.visible = !this.isEditing;
     }
 
@@ -458,7 +461,7 @@ export default class ScomMarkdownEditor extends Module {
                     const parsedMessage = JSON.parse(message);
                     const text = parsedMessage.choices[0].text;
                     this.mdEditor.value = (this.mdEditor?.getMarkdownValue() || '') + text;
-                } catch(error) {
+                } catch (error) {
                     console.error('Could not JSON parse stream message', message, error);
                 }
             }
@@ -489,15 +492,15 @@ export default class ScomMarkdownEditor extends Module {
         return (
             <i-vstack id="pnlMarkdownEditor">
                 <i-panel id={'pnlEditor'} padding={{ top: "0.5rem", bottom: "0.5rem", left: "1rem", right: "1rem" }} />
-                <i-hstack id={'pnlAIPrompt'} width="100%" horizontalAlignment="space-between" verticalAlignment="center" padding={{ top: "0.5rem", bottom: "0.5rem", left: "1rem", right: "1rem" }}>
+                <i-hstack id={'pnlAIPrompt'} visible={false} width="100%" horizontalAlignment="space-between" verticalAlignment="center" padding={{ top: "0.5rem", bottom: "0.5rem", left: "1rem", right: "1rem" }}>
                     <i-vstack width="90%">
                         <i-hstack
                             id="pnlWaiting"
                             gap={4} verticalAlignment="center"
                             minHeight={32} width="100%" height="auto"
-                            border={{width: '0.5px', style: 'solid', color: Theme.divider}}
-                            background={{color: Theme.input.background}}
-                            padding={{left: '10px'}}
+                            border={{ width: '0.5px', style: 'solid', color: Theme.divider }}
+                            background={{ color: Theme.input.background }}
+                            padding={{ left: '10px' }}
                             visible={false}
                         >
                             <i-label font={{ size: '1.5rem', color: Theme.input.fontColor }} caption="AI is writing"></i-label>
@@ -511,8 +514,8 @@ export default class ScomMarkdownEditor extends Module {
                     </i-vstack>
                     <i-button id="btnStop" caption="Stop" width="10%" visible={false} font={{ color: 'rgba(255,255,255)' }} padding={{ top: "0.5rem", bottom: "0.5rem", left: "1rem", right: "1rem" }} onClick={this.stopAPIPrompt}></i-button>
                     <i-button id="btnSend" caption="Send" width="10%" font={{ color: 'rgba(255,255,255)' }} padding={{ top: "0.5rem", bottom: "0.5rem", left: "1rem", right: "1rem" }} onClick={this.sendAIPrompt}></i-button>
-                </i-hstack>           
-                <i-panel id={'pnlViewer'} minHeight={20}/>
+                </i-hstack>
+                <i-panel id={'pnlViewer'} minHeight={20} />
             </i-vstack>
         );
     }
