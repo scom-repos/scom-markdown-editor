@@ -39,5 +39,16 @@ Styles.cssRule('#pnlMarkdownEditor', {
                 }
             }
         },
+        'a': {
+            display: 'initial'
+        },
+        '.toastui-editor-dropdown-toolbar': {
+            maxWidth: '100%',
+            flexWrap: 'wrap',
+            height: 'auto'
+        },
+        '.toastui-editor-mode-switch': {
+            background: 'transparent'
+        }
     }
 });

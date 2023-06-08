@@ -44,12 +44,19 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
                     }
                 }
             },
+            'a': {
+                display: 'initial'
+            },
+            '.toastui-editor-dropdown-toolbar': {
+                maxWidth: '100%',
+                flexWrap: 'wrap',
+                height: 'auto'
+            },
+            '.toastui-editor-mode-switch': {
+                background: 'transparent'
+            }
         }
     });
-});
-define("@scom/scom-markdown-editor/interface.ts", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
 });
 define("@scom/scom-markdown-editor/store.ts", ["require", "exports"], function (require, exports) {
     "use strict";
@@ -83,8 +90,8 @@ define("@scom/scom-markdown-editor/API.ts", ["require", "exports", "@scom/scom-m
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.fetchAIGeneratedText = void 0;
     async function fetchAIGeneratedText(prompt) {
-        const APIUrl = store_1.getAIAPIUrl();
-        const APIKey = store_1.getAIAPIKey();
+        const APIUrl = (0, store_1.getAIAPIUrl)();
+        const APIKey = (0, store_1.getAIAPIKey)();
         const response = await fetch(APIUrl, {
             method: 'POST',
             headers: {
@@ -137,7 +144,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             this._editMode = false;
             this._theme = 'light';
             if (data_json_1.default)
-                store_2.setDataFromSCConfig(data_json_1.default);
+                (0, store_2.setDataFromSCConfig)(data_json_1.default);
         }
         static async create(options, parent) {
             let self = new this(parent, options);
@@ -193,9 +200,6 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             (!data) && this.renderEmptyPnl();
             this.data = data;
         }
-        // getConfigSchema() {
-        //     return configSchema;
-        // }
         preventDrag(builder, value) {
             if (!builder)
                 return;
@@ -311,10 +315,6 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             ];
             return actions;
         }
-        // async onConfigSave(config: IConfigData) {
-        //     this.tag = config;
-        //     this.updateMarkdown(config);
-        // }
         updateMarkdown(config) {
             if (!config)
                 return;
@@ -327,6 +327,10 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                     this.mdEditor.width = width;
                 if (height)
                     this.mdEditor.height = height;
+                const container = this.mdEditor.querySelector('.toastui-editor-ww-container');
+                if (container) {
+                    container.style.background = background;
+                }
             }
             if (this.mdViewer) {
                 if (width)
@@ -407,6 +411,10 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                                         'center',
                                         'right'
                                     ]
+                                },
+                                background: {
+                                    type: 'string',
+                                    format: 'color'
                                 }
                             }
                         };
@@ -521,7 +529,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                 return;
             this.toggleStopBtn(true);
             try {
-                const result = await API_1.fetchAIGeneratedText(this.inputAIPrompt.value);
+                const result = await (0, API_1.fetchAIGeneratedText)(this.inputAIPrompt.value);
                 // console.log('answer', answer);
                 if (!this.isStopped)
                     await this.readAllChunks(result);
@@ -555,7 +563,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
     };
     ScomMarkdownEditor = __decorate([
         components_2.customModule,
-        components_2.customElements('i-scom-markdown-editor')
+        (0, components_2.customElements)('i-scom-markdown-editor')
     ], ScomMarkdownEditor);
     exports.default = ScomMarkdownEditor;
 });

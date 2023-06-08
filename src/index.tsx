@@ -15,7 +15,6 @@ import {
     IDataSchema
 } from '@ijstech/components';
 import './index.css';
-import { IConfigSchema, PageBlock } from './interface';
 import { fetchAIGeneratedText } from './API';
 import { setDataFromSCConfig } from './store';
 import scconfig from './data.json';
@@ -27,20 +26,6 @@ export interface IConfigData {
     background?: string;
 }
 
-// const configSchema: IConfigSchema = {
-//     type: 'object',
-//     properties: {
-//         width: {
-//             type: 'string',
-//         },
-//         height: {
-//             type: 'string',
-//         },
-//         background: {
-//             type: 'string',
-//         }
-//     }
-// }
 type ThemeType = 'dark' | 'light'
 interface ScomMarkdownElement extends ControlElement {
     data?: string;
@@ -148,10 +133,6 @@ export default class ScomMarkdownEditor extends Module {
         this.data = data;
     }
 
-    // getConfigSchema() {
-    //     return configSchema;
-    // }
-
     private preventDrag(builder: Control, value: boolean) {
         if (!builder) return;
         const section = builder.closest('ide-section') as Control;
@@ -258,11 +239,6 @@ export default class ScomMarkdownEditor extends Module {
         return actions;
     }
 
-    // async onConfigSave(config: IConfigData) {
-    //     this.tag = config;
-    //     this.updateMarkdown(config);
-    // }
-
     private updateMarkdown(config: IConfigData) {
         if (!config) return;
         const { width, height, background } = config;
@@ -272,6 +248,10 @@ export default class ScomMarkdownEditor extends Module {
         if (this.mdEditor) {
             if (width) this.mdEditor.width = width;
             if (height) this.mdEditor.height = height;
+            const container = this.mdEditor.querySelector('.toastui-editor-ww-container') as HTMLElement;
+            if (container) {
+                container.style.background = background;
+            }
         }
         if (this.mdViewer) {
             if (width) this.mdViewer.width = width;
@@ -358,6 +338,10 @@ export default class ScomMarkdownEditor extends Module {
                                     'center',
                                     'right'
                                 ]
+                            },
+                            background: {
+                                type: 'string',
+                                format: 'color'
                             }
                         }
                     }
