@@ -28,6 +28,7 @@ export interface IConfigData {
 
 type ThemeType = 'dark' | 'light'
 interface ScomMarkdownElement extends ControlElement {
+    lazyLoad?: boolean;
     data?: string;
     editMode?: boolean;
     theme?: ThemeType
@@ -125,12 +126,15 @@ export default class ScomMarkdownEditor extends Module {
             const finalHeight = height ? (typeof this.height === 'string' ? height : `${height}px`) : 'auto';
             this.setTag({ width: finalWidth, height: finalHeight });
         }
-        const themeAttr = this.getAttribute('theme', true);
-        if (themeAttr) this.theme = themeAttr
-        this.editMode = this.getAttribute('editMode', true, false);
-        const data = this.getAttribute('data', true, '');
-        (!data) && this.renderEmptyPnl();
-        this.data = data;
+        const lazyLoad = this.getAttribute('lazyLoad', true, false);
+        if (!lazyLoad) {
+            const themeAttr = this.getAttribute('theme', true);
+            if (themeAttr) this.theme = themeAttr
+            this.editMode = this.getAttribute('editMode', true, false);
+            const data = this.getAttribute('data', true, '');
+            (!data) && this.renderEmptyPnl();
+            this.data = data;
+        }
     }
 
     private preventDrag(builder: Control, value: boolean) {
