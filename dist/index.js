@@ -8,14 +8,8 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_1.Styles.Theme.ThemeVars;
-    const typingAnim = components_1.Styles.keyframes({
-        '0%': { "transform": "translate(0, -7px)" },
-        '25%': { "transform": "translate(0, 0)" },
-        '50%': { "transform": "translate(0, 0)" },
-        '75%': { "transform": "translate(0, 0)" },
-        '100%': { "transform": "translate(0, 7px)" }
-    });
-    components_1.Styles.cssRule('#pnlMarkdownEditor', {
+    components_1.Styles.cssRule('i-scom-markdown-editor', {
+        overflow: 'hidden auto',
         $nest: {
             'i-panel.container': {
                 width: Theme.layout.container.width,
@@ -23,26 +17,6 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
                 overflow: Theme.layout.container.overflow,
                 textAlign: Theme.layout.container.textAlign,
                 margin: '0 auto'
-            },
-            // '#inputAIPrompt': {
-            //     width: '90% !important'
-            // },   
-            // '#inputAIPrompt > input': {
-            //     width: '100% !important'
-            // },
-            '.typing': {
-                transition: 'all 0.5s linear',
-                $nest: {
-                    'i-icon:nth-last-child(1)': {
-                        animation: `${typingAnim} 1s 0.3s linear infinite`
-                    },
-                    'i-icon:nth-last-child(2)': {
-                        animation: `${typingAnim} 1s 0.2s linear infinite`
-                    },
-                    'i-icon:nth-last-child(3)': {
-                        animation: `${typingAnim} 1s 0.2s linear infinite`
-                    }
-                }
             },
             'a': {
                 display: 'initial'
@@ -85,13 +59,25 @@ define("@scom/scom-markdown-editor/store.ts", ["require", "exports"], function (
     };
     exports.getAIAPIKey = getAIAPIKey;
 });
+define("@scom/scom-markdown-editor/data.json.ts", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    ///<amd-module name='@scom/scom-markdown-editor/data.json.ts'/> 
+    exports.default = {
+        "aiAPIUrl": "https://api.openai.com/v1/completions",
+        "aiAPIKey": "",
+        "defaultBuilderData": {
+            "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla ac est sit amet urna consectetur semper. Curabitur posuere justo et nibh gravida, non tristique urna fringilla. Vestibulum id velit sed nisl tincidunt aliquet. Morbi viverra sapien eu purus venenatis, vitae vestibulum odio bibendum. Fusce volutpat gravida velit, id efficitur erat luctus id. Nullam malesuada hendrerit orci, a pretium tortor facilisis non. Sed euismod euismod felis. Nunc rhoncus diam in mi placerat efficitur. Aenean pulvinar neque ac nisl consequat, non lacinia lectus dapibus. Phasellus sagittis sagittis massa a luctus. Etiam auctor semper ullamcorper. Suspendisse potenti."
+        }
+    };
+});
 define("@scom/scom-markdown-editor/API.ts", ["require", "exports", "@scom/scom-markdown-editor/store.ts"], function (require, exports, store_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.fetchAIGeneratedText = void 0;
     async function fetchAIGeneratedText(prompt) {
-        const APIUrl = (0, store_1.getAIAPIUrl)();
-        const APIKey = (0, store_1.getAIAPIKey)();
+        const APIUrl = store_1.getAIAPIUrl();
+        const APIKey = store_1.getAIAPIKey();
         const response = await fetch(APIUrl, {
             method: 'POST',
             headers: {
@@ -116,62 +102,73 @@ define("@scom/scom-markdown-editor/API.ts", ["require", "exports", "@scom/scom-m
     }
     exports.fetchAIGeneratedText = fetchAIGeneratedText;
 });
-define("@scom/scom-markdown-editor/data.json.ts", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    ///<amd-module name='@scom/scom-markdown-editor/data.json.ts'/> 
-    exports.default = {
-        "aiAPIUrl": "https://api.openai.com/v1/completions",
-        "aiAPIKey": "",
-        "defaultBuilderData": {
-            "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla ac est sit amet urna consectetur semper. Curabitur posuere justo et nibh gravida, non tristique urna fringilla. Vestibulum id velit sed nisl tincidunt aliquet. Morbi viverra sapien eu purus venenatis, vitae vestibulum odio bibendum. Fusce volutpat gravida velit, id efficitur erat luctus id. Nullam malesuada hendrerit orci, a pretium tortor facilisis non. Sed euismod euismod felis. Nunc rhoncus diam in mi placerat efficitur. Aenean pulvinar neque ac nisl consequat, non lacinia lectus dapibus. Phasellus sagittis sagittis massa a luctus. Etiam auctor semper ullamcorper. Suspendisse potenti."
-        }
-    };
-});
-define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components", "@scom/scom-markdown-editor/API.ts", "@scom/scom-markdown-editor/store.ts", "@scom/scom-markdown-editor/data.json.ts", "@scom/scom-markdown-editor/index.css.ts"], function (require, exports, components_2, API_1, store_2, data_json_1) {
+define("@scom/scom-markdown-editor/editor/index.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_2.Styles.Theme.ThemeVars;
-    let ScomMarkdownEditor = class ScomMarkdownEditor extends components_2.Module {
-        constructor(parent, options) {
-            super(parent, options);
-            this.oldTag = {};
-            this.tag = {};
-            this.defaultEdit = true;
-            this.isEditing = false;
-            this.isStopped = false;
-            this.oldContent = '';
-            this._editMode = false;
-            this._theme = 'light';
-            if (data_json_1.default)
-                (0, store_2.setDataFromSCConfig)(data_json_1.default);
-        }
-        static async create(options, parent) {
-            let self = new this(parent, options);
-            await self.ready();
-            return self;
-        }
-        get data() {
-            return this._data;
-        }
-        set data(value) {
-            this._data = value;
-            this.setData({ content: value });
-        }
-        get editMode() {
-            return this._editMode;
-        }
-        set editMode(value) {
-            this._editMode = value;
-            this.isEditing = value;
-            if (this.pnlEditor) {
-                this.pnlEditor.visible = this.isEditing;
-                // this.pnlEditor.visible = this.pnlAIPrompt.visible = this.isEditing;
-                if (!this.mdEditor)
-                    this.renderEditor();
+    const typingAnim = components_2.Styles.keyframes({
+        '0%': { "transform": "translate(0, -7px)" },
+        '25%': { "transform": "translate(0, 0)" },
+        '50%': { "transform": "translate(0, 0)" },
+        '75%': { "transform": "translate(0, 0)" },
+        '100%': { "transform": "translate(0, 7px)" }
+    });
+    components_2.Styles.cssRule('i-scom-markdown-editor-config', {
+        $nest: {
+            'i-panel.container': {
+                width: Theme.layout.container.width,
+                maxWidth: Theme.layout.container.maxWidth,
+                overflow: Theme.layout.container.overflow,
+                textAlign: Theme.layout.container.textAlign,
+                margin: '0 auto'
+            },
+            '.typing': {
+                transition: 'all 0.5s linear',
+                $nest: {
+                    'i-icon:nth-last-child(1)': {
+                        animation: `${typingAnim} 1s 0.3s linear infinite`
+                    },
+                    'i-icon:nth-last-child(2)': {
+                        animation: `${typingAnim} 1s 0.2s linear infinite`
+                    },
+                    'i-icon:nth-last-child(3)': {
+                        animation: `${typingAnim} 1s 0.2s linear infinite`
+                    }
+                }
+            },
+            'a': {
+                display: 'initial'
+            },
+            '.toastui-editor-dropdown-toolbar': {
+                maxWidth: '100%',
+                flexWrap: 'wrap',
+                height: 'auto'
+            },
+            '.toastui-editor-mode-switch': {
+                background: 'transparent'
             }
-            if (this.pnlViewer)
-                this.pnlViewer.visible = !this.isEditing;
+        }
+    });
+});
+define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@ijstech/components", "@scom/scom-markdown-editor/API.ts", "@scom/scom-markdown-editor/editor/index.css.ts"], function (require, exports, components_3, API_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const Theme = components_3.Styles.Theme.ThemeVars;
+    let Config = class Config extends components_3.Module {
+        constructor() {
+            super(...arguments);
+            this._data = '';
+            this._theme = 'light';
+            this.isStopped = false;
+        }
+        get content() {
+            var _a;
+            return ((_a = this.mdEditor) === null || _a === void 0 ? void 0 : _a.getMarkdownValue()) || this._data;
+        }
+        set content(value) {
+            this._data = value;
+            if (this.mdEditor)
+                this.mdEditor.value = value;
         }
         get theme() {
             return this._theme;
@@ -180,316 +177,22 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             this._theme = value;
             if (this.mdEditor)
                 this.mdEditor.theme = value;
-            if (this.mdViewer)
-                this.mdViewer.theme = value;
         }
-        init() {
-            super.init();
-            const width = this.getAttribute('width', true);
-            const height = this.getAttribute('height', true);
-            if (width || height) {
-                const finalWidth = width ? (typeof this.width === 'string' ? width : `${width}px`) : '100%';
-                const finalHeight = height ? (typeof this.height === 'string' ? height : `${height}px`) : 'auto';
-                this.setTag({ width: finalWidth, height: finalHeight });
-            }
-            const themeAttr = this.getAttribute('theme', true);
-            if (themeAttr)
-                this.theme = themeAttr;
-            this.editMode = this.getAttribute('editMode', true, false);
-            const data = this.getAttribute('data', true, '');
-            (!data) && this.renderEmptyPnl();
-            this.data = data;
-        }
-        preventDrag(builder, value) {
-            if (!builder)
-                return;
-            const section = builder.closest('ide-section');
-            section && (section.style.height = 'auto');
-            if (value)
-                builder.classList.add('is-editing');
-            else
-                builder.classList.remove('is-editing');
-        }
-        _getActions(themeSchema) {
-            const actions = [
-                {
-                    name: 'Edit',
-                    icon: 'edit',
-                    visible: () => !this.isEditing,
-                    command: (builder, userInputData) => {
-                        return {
-                            execute: () => {
-                                this.edit();
-                                this.preventDrag(builder, true);
-                            },
-                            undo: () => {
-                            },
-                            redo: () => { }
-                        };
-                    },
-                    userInputDataSchema: {}
-                },
-                {
-                    name: 'Theme Settings',
-                    icon: 'palette',
-                    visible: () => !this.isEditing && themeSchema != null && themeSchema != undefined,
-                    command: (builder, userInputData) => {
-                        return {
-                            execute: async () => {
-                                if (!userInputData)
-                                    return;
-                                this.oldTag = Object.assign({}, this.tag);
-                                this.setTag(userInputData);
-                                if (builder)
-                                    builder.setTag(userInputData);
-                            },
-                            undo: () => {
-                                if (!userInputData)
-                                    return;
-                                this.setTag(this.oldTag);
-                                if (builder)
-                                    builder.setTag(this.oldTag);
-                            },
-                            redo: () => { }
-                        };
-                    },
-                    userInputDataSchema: themeSchema
-                },
-                {
-                    name: 'Confirm',
-                    icon: 'check',
-                    visible: () => this.isEditing,
-                    command: (builder, userInputData) => {
-                        return {
-                            execute: () => {
-                                var _a;
-                                const isChanged = ((_a = this.mdEditor) === null || _a === void 0 ? void 0 : _a.getMarkdownValue()) !== this.data;
-                                if (this.oldContent && !isChanged && this.mdEditor)
-                                    this.mdEditor.value = this.oldContent;
-                                this.oldData = this.data;
-                                this.confirm();
-                                if (this.mdViewer)
-                                    this.mdViewer.value = this.data;
-                                this.preventDrag(builder, false);
-                            },
-                            undo: () => {
-                                var _a;
-                                const currentData = this.data;
-                                this.edit();
-                                this.oldContent = (((_a = this.mdEditor) === null || _a === void 0 ? void 0 : _a.getMarkdownValue()) || '');
-                                if (this.mdEditor)
-                                    this.mdEditor.value = this.oldData;
-                                this.setData({ content: this.oldData });
-                                this.oldData = currentData;
-                                this.preventDrag(builder, true);
-                                builder && builder.setData({ content: this.data });
-                            },
-                            redo: () => { }
-                        };
-                    },
-                    userInputDataSchema: {}
-                },
-                {
-                    name: 'Discard',
-                    icon: 'times',
-                    visible: () => this.isEditing,
-                    command: (builder, userInputData) => {
-                        return {
-                            execute: () => {
-                                var _a;
-                                this.oldData = ((_a = this.mdEditor) === null || _a === void 0 ? void 0 : _a.getMarkdownValue()) || '';
-                                this.discard();
-                                this.preventDrag(builder, false);
-                            },
-                            undo: () => {
-                                this.edit();
-                                if (this.mdEditor)
-                                    this.mdEditor.value = this.oldData;
-                                this.preventDrag(builder, true);
-                            },
-                            redo: () => { }
-                        };
-                    },
-                    userInputDataSchema: {}
-                }
-            ];
-            return actions;
-        }
-        updateMarkdown(config) {
-            if (!config)
-                return;
-            const { width, height, background } = config;
-            if (this.pnlMarkdownEditor) {
-                this.pnlMarkdownEditor.background.color = background;
-            }
-            if (this.mdEditor) {
-                if (width)
-                    this.mdEditor.width = width;
-                if (height)
-                    this.mdEditor.height = height;
-                const container = this.mdEditor.querySelector('.toastui-editor-ww-container');
-                if (container) {
-                    container.style.background = background;
-                }
-            }
-            if (this.mdViewer) {
-                if (width)
-                    this.mdViewer.width = width;
-                // Using style because mode view doesnt have height attribute
-                if (height)
-                    this.mdViewer.style.height = height;
-            }
-        }
-        getData() {
-            return {
-                content: this.data
-            };
-        }
-        renderEmptyPnl() {
-            this.pnlViewer.clearInnerHTML();
-            if (this.pnlViewer.visible)
-                this.pnlViewer.appendChild(this.$render("i-label", { caption: "Click to edit text", opacity: 0.5, display: "block", padding: { top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' } }));
-        }
-        async setData(value) {
-            this._data = value.content || '';
-            // this.setTag({width: value.width, height: value.height});
-            this.pnlEditor.visible = this.isEditing;
-            // this.pnlEditor.visible = this.pnlAIPrompt.visible = this.isEditing;
-            this.pnlViewer.visible = !this.isEditing;
-            if (!this.data) {
-                this.renderEmptyPnl();
-                return;
-            }
-            ;
-            const { width = '100%', height = "auto" } = this.tag || {};
-            if (!this.mdViewer) {
-                this.mdViewer = await components_2.MarkdownEditor.create({
-                    viewer: true,
-                    value: this.data,
-                    width,
-                    height,
-                    theme: this.theme
-                });
-                this.mdViewer.display = 'block';
-                if (height)
-                    this.mdViewer.style.height = height;
-                this.pnlViewer.clearInnerHTML();
-                this.pnlViewer.appendChild(this.mdViewer);
-            }
-            else {
-                this.pnlViewer.clearInnerHTML();
-                this.pnlViewer.appendChild(this.mdViewer);
-                this.mdViewer.value = this.data;
-            }
-        }
-        getTag() {
-            return this.tag;
-        }
-        async setTag(value) {
-            let { width, height, background, textAlign } = value;
-            width = typeof width === 'string' ? width : `${width}px`;
-            height = typeof height === 'string' ? height : `${height}px`;
-            if (height !== 'auto')
-                this.height = 'auto';
-            this.tag = { width, height, background, textAlign };
-            this.pnlViewer.style.textAlign = textAlign || "left";
-            this.updateMarkdown(value);
-        }
-        getConfigurators() {
-            return [
-                {
-                    name: 'Builder Configurator',
-                    target: 'Builders',
-                    getActions: () => {
-                        const themeSchema = {
-                            type: 'object',
-                            properties: {
-                                textAlign: {
-                                    type: 'string',
-                                    enum: [
-                                        'left',
-                                        'center',
-                                        'right'
-                                    ]
-                                },
-                                background: {
-                                    type: 'string',
-                                    format: 'color'
-                                }
-                            }
-                        };
-                        return this._getActions(themeSchema);
-                    },
-                    getData: this.getData.bind(this),
-                    setData: async (data) => {
-                        const defaultData = data_json_1.default.defaultBuilderData;
-                        await this.setData(Object.assign(Object.assign({}, defaultData), data));
-                    },
-                    getTag: this.getTag.bind(this),
-                    setTag: this.setTag.bind(this)
-                },
-                {
-                    name: 'Emdedder Configurator',
-                    target: 'Embedders',
-                    getData: this.getData.bind(this),
-                    setData: this.setData.bind(this),
-                    getTag: this.getTag.bind(this),
-                    setTag: this.setTag.bind(this)
-                }
-            ];
-        }
-        async edit() {
-            // this.pnlEditor.visible = true;
-            // this.pnlViewer.visible = false;
-            this.isEditing = true;
-            this.renderEditor();
-        }
-        async confirm() {
-            var _a, _b;
-            // this.pnlEditor.visible = false;
-            // this.pnlViewer.visible = true;
-            this.isEditing = false;
-            await this.setData({
-                content: ((_a = this.mdEditor) === null || _a === void 0 ? void 0 : _a.getMarkdownValue()) || ''
-            });
-            const builder = (_b = this.parent) === null || _b === void 0 ? void 0 : _b.closest('ide-toolbar');
-            builder && builder.setData({ content: this.data });
-        }
-        async discard() {
-            var _a;
-            // this.pnlEditor.visible = false;
-            // this.pnlViewer.visible = true;
-            this.isEditing = false;
-            await this.setData({
-                content: this.data
-            });
-            const builder = (_a = this.parent) === null || _a === void 0 ? void 0 : _a.closest('ide-toolbar');
-            builder && builder.setData({ content: this.data });
-        }
-        // private validate() {
-        //     if (this.mdEditor && this.mdEditor.getMarkdownValue()) {
-        //         return true;
-        //     }
-        //     return false;
-        // }
         async renderEditor() {
-            const { width = '100%', height = "auto" } = this.tag;
             if (!this.mdEditor) {
-                this.mdEditor = await components_2.MarkdownEditor.create({
-                    value: this.data,
+                this.mdEditor = await components_3.MarkdownEditor.create({
+                    value: this._data,
                     mode: 'wysiwyg',
-                    width,
-                    height,
+                    width: '100%',
+                    height: 'auto',
                     theme: this.theme
                 });
                 this.mdEditor.display = 'block';
                 this.pnlEditor.clearInnerHTML();
                 this.pnlEditor.appendChild(this.mdEditor);
             }
-            this.mdEditor.value = this.data;
-            this.pnlEditor.visible = this.isEditing;
-            // this.pnlEditor.visible = this.pnlAIPrompt.visible = this.isEditing;
-            this.pnlViewer.visible = !this.isEditing;
+            this.mdEditor.value = this._data;
+            this.mdEditor.theme = this.theme;
         }
         toggleStopBtn(value) {
             this.btnStop.visible = value;
@@ -503,9 +206,10 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             let done;
             let value;
             while (!done) {
+                ;
                 ({ value, done } = await reader.read());
                 const valueString = new TextDecoder().decode(value);
-                const lines = valueString.split('\n').filter(line => line.trim() !== '');
+                const lines = valueString.split('\n').filter((line) => line.trim() !== '');
                 for (const line of lines) {
                     if (this.isStopped)
                         break;
@@ -529,13 +233,11 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                 return;
             this.toggleStopBtn(true);
             try {
-                const result = await (0, API_1.fetchAIGeneratedText)(this.inputAIPrompt.value);
-                // console.log('answer', answer);
+                const result = await API_1.fetchAIGeneratedText(this.inputAIPrompt.value);
                 if (!this.isStopped)
                     await this.readAllChunks(result);
             }
-            catch (_a) {
-            }
+            catch (_a) { }
             this.inputAIPrompt.value = '';
             this.toggleStopBtn(false);
         }
@@ -544,26 +246,291 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             this.inputAIPrompt.value = '';
             this.toggleStopBtn(false);
         }
+        init() {
+            super.init();
+            this.content = this.getAttribute('content', true, '');
+            const themeAttr = this.getAttribute('theme', true);
+            if (themeAttr)
+                this.theme = themeAttr;
+            this.renderEditor();
+        }
+        render() {
+            return (this.$render("i-panel", { padding: { left: '1rem', right: '1rem', top: '1rem', bottom: '2rem' } },
+                this.$render("i-panel", { id: 'pnlEditor', padding: {
+                        top: '0.5rem',
+                        bottom: '0.5rem',
+                        left: '1rem',
+                        right: '1rem',
+                    } },
+                    this.$render("i-markdown-editor", { id: "mdEditor", width: '100%', height: 'auto', mode: 'wysiwyg' })),
+                this.$render("i-hstack", { id: 'pnlAIPrompt', visible: false, width: '100%', horizontalAlignment: 'space-between', verticalAlignment: 'center', padding: {
+                        top: '0.5rem',
+                        bottom: '0.5rem',
+                        left: '1rem',
+                        right: '1rem',
+                    } },
+                    this.$render("i-vstack", { width: '90%' },
+                        this.$render("i-hstack", { id: 'pnlWaiting', gap: 4, verticalAlignment: 'center', minHeight: 32, width: '100%', height: 'auto', border: {
+                                width: '0.5px',
+                                style: 'solid',
+                                color: Theme.divider,
+                            }, background: { color: Theme.input.background }, padding: { left: '10px' }, visible: false },
+                            this.$render("i-label", { font: { size: '1.5rem', color: Theme.input.fontColor }, caption: 'AI is writing' }),
+                            this.$render("i-hstack", { gap: 4, verticalAlignment: 'center', class: 'typing' },
+                                this.$render("i-icon", { name: 'circle', width: 4, height: 4, fill: Theme.input.fontColor }),
+                                this.$render("i-icon", { name: 'circle', width: 4, height: 4, fill: Theme.input.fontColor }),
+                                this.$render("i-icon", { name: 'circle', width: 4, height: 4, fill: Theme.input.fontColor }))),
+                        this.$render("i-input", { id: 'inputAIPrompt', placeholder: 'Ask AI to edit or generate...', font: { size: '1.5rem' }, height: 'auto', width: '100%' })),
+                    this.$render("i-button", { id: 'btnStop', caption: 'Stop', width: '10%', visible: false, font: { color: 'rgba(255,255,255)' }, padding: {
+                            top: '0.5rem',
+                            bottom: '0.5rem',
+                            left: '1rem',
+                            right: '1rem',
+                        }, onClick: this.stopAPIPrompt }),
+                    this.$render("i-button", { id: 'btnSend', caption: 'Send', width: '10%', font: { color: 'rgba(255,255,255)' }, padding: {
+                            top: '0.5rem',
+                            bottom: '0.5rem',
+                            left: '1rem',
+                            right: '1rem',
+                        }, onClick: this.sendAIPrompt }))));
+        }
+    };
+    Config = __decorate([
+        components_3.customModule,
+        components_3.customElements('i-scom-markdown-editor-config')
+    ], Config);
+    exports.default = Config;
+});
+define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components", "@scom/scom-markdown-editor/store.ts", "@scom/scom-markdown-editor/data.json.ts", "@scom/scom-markdown-editor/editor/index.tsx", "@scom/scom-markdown-editor/index.css.ts"], function (require, exports, components_4, store_2, data_json_1, index_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const Theme = components_4.Styles.Theme.ThemeVars;
+    let ScomMarkdownEditor = class ScomMarkdownEditor extends components_4.Module {
+        constructor(parent, options) {
+            super(parent, options);
+            this.tag = {};
+            this.defaultEdit = true;
+            this._theme = 'light';
+            if (data_json_1.default)
+                store_2.setDataFromSCConfig(data_json_1.default);
+        }
+        static async create(options, parent) {
+            let self = new this(parent, options);
+            await self.ready();
+            return self;
+        }
+        get data() {
+            return this._data;
+        }
+        set data(value) {
+            this._data = value;
+            this.setData({ content: value });
+        }
+        get theme() {
+            return this._theme;
+        }
+        set theme(value) {
+            this._theme = value;
+            if (this.mdViewer)
+                this.mdViewer.theme = value;
+        }
+        async init() {
+            super.init();
+            const width = this.getAttribute('width', true);
+            const height = this.getAttribute('height', true);
+            if (width || height) {
+                const finalWidth = width ? (typeof this.width === 'string' ? width : `${width}px`) : '100%';
+                const finalHeight = height ? (typeof this.height === 'string' ? height : `${height}px`) : 'auto';
+                this.setTag({ width: finalWidth, height: finalHeight });
+            }
+            const themeAttr = this.getAttribute('theme', true);
+            if (themeAttr)
+                this.theme = themeAttr;
+            this.data = this.getAttribute('data', true, '');
+        }
+        _getActions(themeSchema) {
+            const actions = [
+                {
+                    name: 'Edit',
+                    icon: 'edit',
+                    command: (builder, userInputData) => {
+                        let _oldData = '';
+                        return {
+                            execute: async () => {
+                                _oldData = this._data;
+                                const content = userInputData.content;
+                                await this.setData({ content });
+                                if (builder === null || builder === void 0 ? void 0 : builder.setData)
+                                    builder.setData({ content });
+                            },
+                            undo: async () => {
+                                this._data = _oldData;
+                                await this.setData({ content: this._data });
+                                if (builder === null || builder === void 0 ? void 0 : builder.setData)
+                                    builder.setData({ content: this._data });
+                            },
+                            redo: () => { }
+                        };
+                    },
+                    userInputDataSchema: {},
+                    customUI: {
+                        render: (data, onConfirm) => {
+                            const vstack = new components_4.VStack();
+                            const config = new index_1.default(null, {
+                                content: this._data,
+                                theme: this.theme
+                            });
+                            const button = new components_4.Button(null, {
+                                caption: 'Confirm',
+                                background: { color: Theme.colors.primary.main },
+                                font: { color: Theme.colors.primary.contrastText }
+                            });
+                            vstack.append(config);
+                            vstack.append(button);
+                            button.onClick = async () => {
+                                const content = config.content;
+                                if (onConfirm)
+                                    onConfirm(true, { content });
+                            };
+                            return vstack;
+                        }
+                    }
+                },
+                {
+                    name: 'Theme Settings',
+                    icon: 'palette',
+                    visible: () => themeSchema != null && themeSchema != undefined,
+                    command: (builder, userInputData) => {
+                        let oldTag = {};
+                        return {
+                            execute: async () => {
+                                if (!userInputData)
+                                    return;
+                                oldTag = Object.assign({}, this.tag);
+                                this.setTag(userInputData);
+                                if (builder)
+                                    builder.setTag(userInputData);
+                            },
+                            undo: () => {
+                                if (!userInputData)
+                                    return;
+                                this.setTag(oldTag);
+                                if (builder)
+                                    builder.setTag(oldTag);
+                            },
+                            redo: () => { }
+                        };
+                    },
+                    userInputDataSchema: themeSchema
+                }
+            ];
+            return actions;
+        }
+        updateMarkdown(config) {
+            if (!config)
+                return;
+            const { width, height, background } = config;
+            if (this.pnlMarkdownEditor) {
+                this.pnlMarkdownEditor.background.color = background;
+            }
+            // TODO: update data
+            // if (this.mdEditor) {
+            //     if (width) this.mdEditor.width = width;
+            //     if (height) this.mdEditor.height = height;
+            //     const container = this.mdEditor.querySelector('.toastui-editor-ww-container') as HTMLElement;
+            //     if (container) {
+            //         container.style.background = background;
+            //     }
+            // }
+            if (this.mdViewer) {
+                if (width)
+                    this.mdViewer.width = width;
+                if (height)
+                    this.mdViewer.height = height;
+            }
+        }
+        getData() {
+            return { content: this.data };
+        }
+        toggleEmpty(value) {
+            this.pnlEmpty.visible = value;
+            this.mdViewer.visible = !value;
+        }
+        async setData(value) {
+            this._data = value.content || '';
+            this.toggleEmpty(!this._data);
+            this.mdViewer.value = this.data;
+        }
+        getTag() {
+            return this.tag;
+        }
+        async setTag(value) {
+            let { width, height, background, textAlign } = value;
+            width = typeof width === 'string' ? width : `${width}px`;
+            height = typeof height === 'string' ? height : `${height}px`;
+            this.height = height || 'auto';
+            this.tag = { width, height, background, textAlign };
+            this.pnlMarkdownEditor.style.textAlign = textAlign || "left";
+            this.updateMarkdown(value);
+        }
+        getConfigurators() {
+            return [
+                {
+                    name: 'Builder Configurator',
+                    target: 'Builders',
+                    getActions: () => {
+                        const themeSchema = this.getThemeSchema();
+                        return this._getActions(themeSchema);
+                    },
+                    getData: this.getData.bind(this),
+                    setData: async (data) => {
+                        const defaultData = data_json_1.default.defaultBuilderData;
+                        await this.setData(Object.assign(Object.assign({}, defaultData), data));
+                    },
+                    getTag: this.getTag.bind(this),
+                    setTag: this.setTag.bind(this)
+                },
+                {
+                    name: 'Emdedder Configurator',
+                    target: 'Embedders',
+                    getData: this.getData.bind(this),
+                    setData: this.setData.bind(this),
+                    getTag: this.getTag.bind(this),
+                    setTag: this.setTag.bind(this)
+                }
+            ];
+        }
+        getThemeSchema() {
+            const themeSchema = {
+                type: 'object',
+                properties: {
+                    textAlign: {
+                        type: 'string',
+                        enum: [
+                            'left',
+                            'center',
+                            'right'
+                        ]
+                    },
+                    background: {
+                        type: 'string',
+                        format: 'color'
+                    }
+                }
+            };
+            return themeSchema;
+        }
         render() {
             return (this.$render("i-vstack", { id: "pnlMarkdownEditor" },
-                this.$render("i-panel", { id: 'pnlEditor', padding: { top: "0.5rem", bottom: "0.5rem", left: "1rem", right: "1rem" } }),
-                this.$render("i-hstack", { id: 'pnlAIPrompt', visible: false, width: "100%", horizontalAlignment: "space-between", verticalAlignment: "center", padding: { top: "0.5rem", bottom: "0.5rem", left: "1rem", right: "1rem" } },
-                    this.$render("i-vstack", { width: "90%" },
-                        this.$render("i-hstack", { id: "pnlWaiting", gap: 4, verticalAlignment: "center", minHeight: 32, width: "100%", height: "auto", border: { width: '0.5px', style: 'solid', color: Theme.divider }, background: { color: Theme.input.background }, padding: { left: '10px' }, visible: false },
-                            this.$render("i-label", { font: { size: '1.5rem', color: Theme.input.fontColor }, caption: "AI is writing" }),
-                            this.$render("i-hstack", { gap: 4, verticalAlignment: "center", class: "typing" },
-                                this.$render("i-icon", { name: "circle", width: 4, height: 4, fill: Theme.input.fontColor }),
-                                this.$render("i-icon", { name: "circle", width: 4, height: 4, fill: Theme.input.fontColor }),
-                                this.$render("i-icon", { name: "circle", width: 4, height: 4, fill: Theme.input.fontColor }))),
-                        this.$render("i-input", { id: "inputAIPrompt", placeholder: "Ask AI to edit or generate...", font: { size: '1.5rem' }, height: "auto", width: "100%" })),
-                    this.$render("i-button", { id: "btnStop", caption: "Stop", width: "10%", visible: false, font: { color: 'rgba(255,255,255)' }, padding: { top: "0.5rem", bottom: "0.5rem", left: "1rem", right: "1rem" }, onClick: this.stopAPIPrompt }),
-                    this.$render("i-button", { id: "btnSend", caption: "Send", width: "10%", font: { color: 'rgba(255,255,255)' }, padding: { top: "0.5rem", bottom: "0.5rem", left: "1rem", right: "1rem" }, onClick: this.sendAIPrompt })),
-                this.$render("i-panel", { id: 'pnlViewer', minHeight: 20 })));
+                this.$render("i-panel", { id: "pnlViewer", minHeight: 20 },
+                    this.$render("i-markdown-editor", { id: "mdViewer", viewer: true, value: this.data, width: '100%', height: 'auto', visible: false })),
+                this.$render("i-panel", { id: "pnlEmpty" },
+                    this.$render("i-label", { caption: "Click to edit text", opacity: 0.5, font: { color: '#222' }, padding: { top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' } }))));
         }
     };
     ScomMarkdownEditor = __decorate([
-        components_2.customModule,
-        (0, components_2.customElements)('i-scom-markdown-editor')
+        components_4.customModule,
+        components_4.customElements('i-scom-markdown-editor')
     ], ScomMarkdownEditor);
     exports.default = ScomMarkdownEditor;
 });

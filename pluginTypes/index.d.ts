@@ -6,11 +6,6 @@ declare module "@scom/scom-markdown-editor/store.ts" {
     export const getAIAPIUrl: () => string;
     export const getAIAPIKey: () => string;
 }
-/// <amd-module name="@scom/scom-markdown-editor/API.ts" />
-declare module "@scom/scom-markdown-editor/API.ts" {
-    function fetchAIGeneratedText(prompt: string): Promise<ReadableStream<Uint8Array>>;
-    export { fetchAIGeneratedText };
-}
 /// <amd-module name="@scom/scom-markdown-editor/data.json.ts" />
 declare module "@scom/scom-markdown-editor/data.json.ts" {
     const _default: {
@@ -22,9 +17,55 @@ declare module "@scom/scom-markdown-editor/data.json.ts" {
     };
     export default _default;
 }
+/// <amd-module name="@scom/scom-markdown-editor/API.ts" />
+declare module "@scom/scom-markdown-editor/API.ts" {
+    function fetchAIGeneratedText(prompt: string): Promise<ReadableStream<Uint8Array>>;
+    export { fetchAIGeneratedText };
+}
+/// <amd-module name="@scom/scom-markdown-editor/editor/index.css.ts" />
+declare module "@scom/scom-markdown-editor/editor/index.css.ts" { }
+/// <amd-module name="@scom/scom-markdown-editor/editor/index.tsx" />
+declare module "@scom/scom-markdown-editor/editor/index.tsx" {
+    import { Module, ControlElement } from '@ijstech/components';
+    import "@scom/scom-markdown-editor/editor/index.css.ts";
+    interface ScomEditorConfigElement extends ControlElement {
+        content?: string;
+        theme?: string;
+    }
+    global {
+        namespace JSX {
+            interface IntrinsicElements {
+                ['i-scom-markdown-editor-config']: ScomEditorConfigElement;
+            }
+        }
+    }
+    type ThemeType = 'dark' | 'light';
+    export default class Config extends Module {
+        private pnlEditor;
+        private mdEditor;
+        private inputAIPrompt;
+        private btnStop;
+        private btnSend;
+        private pnlWaiting;
+        private _data;
+        private _theme;
+        private isStopped;
+        get content(): string;
+        set content(value: string);
+        get theme(): ThemeType;
+        set theme(value: ThemeType);
+        private renderEditor;
+        private toggleStopBtn;
+        private readAllChunks;
+        private sendAIPrompt;
+        private stopAPIPrompt;
+        init(): void;
+        render(): any;
+    }
+}
 /// <amd-module name="@scom/scom-markdown-editor" />
 declare module "@scom/scom-markdown-editor" {
-    import { Module, Container, ControlElement, IDataSchema } from '@ijstech/components';
+    import { Module, VStack, Container, ControlElement, IDataSchema } from '@ijstech/components';
     import "@scom/scom-markdown-editor/index.css.ts";
     export interface IConfigData {
         width?: string;
@@ -45,25 +86,12 @@ declare module "@scom/scom-markdown-editor" {
         }
     }
     export default class ScomMarkdownEditor extends Module {
-        private oldData;
         private pnlMarkdownEditor;
-        private pnlEditor;
-        private pnlViewer;
-        private pnlAIPrompt;
-        private inputAIPrompt;
-        private mdEditor;
+        private pnlEmpty;
         private mdViewer;
-        private btnStop;
-        private btnSend;
-        private pnlWaiting;
-        private oldTag;
         tag: any;
         defaultEdit: boolean;
-        private isEditing;
-        private isStopped;
-        private oldContent;
         private _data;
-        private _editMode;
         private _theme;
         readonly onEdit: () => Promise<void>;
         readonly onConfirm: () => Promise<void>;
@@ -72,16 +100,13 @@ declare module "@scom/scom-markdown-editor" {
         static create(options?: ScomMarkdownElement, parent?: Container): Promise<ScomMarkdownEditor>;
         get data(): string;
         set data(value: string);
-        get editMode(): boolean;
-        set editMode(value: boolean);
         get theme(): ThemeType;
         set theme(value: ThemeType);
-        init(): void;
-        private preventDrag;
+        init(): Promise<void>;
         private _getActions;
         private updateMarkdown;
         private getData;
-        private renderEmptyPnl;
+        private toggleEmpty;
         private setData;
         private getTag;
         private setTag;
@@ -91,13 +116,16 @@ declare module "@scom/scom-markdown-editor" {
             getActions: () => ({
                 name: string;
                 icon: string;
-                visible: () => boolean;
                 command: (builder: any, userInputData: any) => {
-                    execute: () => void;
-                    undo: () => void;
+                    execute: () => Promise<void>;
+                    undo: () => Promise<void>;
                     redo: () => void;
                 };
                 userInputDataSchema: {};
+                customUI: {
+                    render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => VStack;
+                };
+                visible?: undefined;
             } | {
                 name: string;
                 icon: string;
@@ -108,6 +136,7 @@ declare module "@scom/scom-markdown-editor" {
                     redo: () => void;
                 };
                 userInputDataSchema: IDataSchema;
+                customUI?: undefined;
             })[];
             getData: any;
             setData: (data: any) => Promise<void>;
@@ -122,14 +151,7 @@ declare module "@scom/scom-markdown-editor" {
             setTag: any;
             getActions?: undefined;
         })[];
-        private edit;
-        private confirm;
-        private discard;
-        private renderEditor;
-        private toggleStopBtn;
-        private readAllChunks;
-        private sendAIPrompt;
-        private stopAPIPrompt;
+        private getThemeSchema;
         render(): any;
     }
 }
