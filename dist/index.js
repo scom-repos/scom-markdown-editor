@@ -404,6 +404,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                     userInputDataSchema: {},
                     customUI: {
                         render: (data, onConfirm) => {
+                            var _a;
                             const vstack = new components_4.VStack();
                             const rowParent = this.parent.closest('ide-row');
                             const config = new index_1.default(null, {
@@ -413,7 +414,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                             });
                             if (rowParent) {
                                 const bgColor = rowParent.style.backgroundColor;
-                                config.background = bgColor ? { color: bgColor } : rowParent.background;
+                                config.background = { color: bgColor || ((_a = rowParent.background) === null || _a === void 0 ? void 0 : _a.color) || '' };
                             }
                             config.setTag(Object.assign({}, this.tag));
                             const button = new components_4.Button(null, {

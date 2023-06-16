@@ -137,7 +137,7 @@ export default class ScomMarkdownEditor extends Module {
                         });
                         if (rowParent) {
                             const bgColor = rowParent.style.backgroundColor;
-                            config.background = bgColor ? {color: bgColor} : rowParent.background;
+                            config.background = {color: bgColor || rowParent.background?.color || ''};
                         }
                         config.setTag({...this.tag});
                         const button = new Button(null, {
