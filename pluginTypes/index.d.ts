@@ -74,6 +74,7 @@ declare module "@scom/scom-markdown-editor" {
     }
     type ThemeType = 'dark' | 'light';
     interface ScomMarkdownElement extends ControlElement {
+        lazyLoad?: boolean;
         data?: string;
         editMode?: boolean;
         theme?: ThemeType;

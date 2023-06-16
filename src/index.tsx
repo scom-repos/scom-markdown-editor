@@ -26,6 +26,7 @@ export interface IConfigData {
 
 type ThemeType = 'dark' | 'light'
 interface ScomMarkdownElement extends ControlElement {
+    lazyLoad?: boolean;
     data?: string;
     editMode?: boolean;
     theme?: ThemeType
@@ -93,9 +94,12 @@ export default class ScomMarkdownEditor extends Module {
             const finalHeight = height ? (typeof this.height === 'string' ? height : `${height}px`) : 'auto';
             this.setTag({ width: finalWidth, height: finalHeight });
         }
-        const themeAttr = this.getAttribute('theme', true);
-        if (themeAttr) this.theme = themeAttr
-        this.data = this.getAttribute('data', true, '');
+        const lazyLoad = this.getAttribute('lazyLoad', true, false);
+        if (!lazyLoad) {
+            const themeAttr = this.getAttribute('theme', true);
+            if (themeAttr) this.theme = themeAttr
+            this.data = this.getAttribute('data', true, '');
+        }
     }
 
     private _getActions(themeSchema?: IDataSchema) {

@@ -343,10 +343,13 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                 const finalHeight = height ? (typeof this.height === 'string' ? height : `${height}px`) : 'auto';
                 this.setTag({ width: finalWidth, height: finalHeight });
             }
-            const themeAttr = this.getAttribute('theme', true);
-            if (themeAttr)
-                this.theme = themeAttr;
-            this.data = this.getAttribute('data', true, '');
+            const lazyLoad = this.getAttribute('lazyLoad', true, false);
+            if (!lazyLoad) {
+                const themeAttr = this.getAttribute('theme', true);
+                if (themeAttr)
+                    this.theme = themeAttr;
+                this.data = this.getAttribute('data', true, '');
+            }
         }
         _getActions(themeSchema) {
             const actions = [
