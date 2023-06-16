@@ -146,6 +146,12 @@ define("@scom/scom-markdown-editor/editor/index.css.ts", ["require", "exports", 
             },
             '.toastui-editor-mode-switch': {
                 background: 'transparent'
+            },
+            '#mdEditor .toastui-editor-md-container': {
+                backgroundColor: 'var(--bg-container, transparent)'
+            },
+            '#mdEditor .toastui-editor-ww-container': {
+                backgroundColor: 'var(--bg-container, transparent)'
             }
         }
     });
@@ -160,6 +166,7 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
             this._data = '';
             this._theme = 'light';
             this.isStopped = false;
+            this.tag = {};
         }
         get content() {
             var _a;
@@ -178,6 +185,21 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
             if (this.mdEditor)
                 this.mdEditor.theme = value;
         }
+        getTag() {
+            return this.tag;
+        }
+        async setTag(value) {
+            const { background, textAlign } = value;
+            this.tag = { background, textAlign };
+            this.updateMardown();
+        }
+        updateMardown() {
+            if (this.wrapPnl) {
+                const { background, textAlign } = this.tag;
+                this.wrapPnl.style.textAlign = textAlign || "left";
+                this.wrapPnl.style.setProperty('--bg-container', background || '');
+            }
+        }
         async renderEditor() {
             if (!this.mdEditor) {
                 this.mdEditor = await components_3.MarkdownEditor.create({
@@ -193,6 +215,7 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
             }
             this.mdEditor.value = this._data;
             this.mdEditor.theme = this.theme;
+            this.updateMardown();
         }
         toggleStopBtn(value) {
             this.btnStop.visible = value;
@@ -252,10 +275,13 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
             const themeAttr = this.getAttribute('theme', true);
             if (themeAttr)
                 this.theme = themeAttr;
+            const tag = this.getAttribute('tag', true);
+            if (tag)
+                this.setTag(tag);
             this.renderEditor();
         }
         render() {
-            return (this.$render("i-panel", { padding: { left: '1rem', right: '1rem', top: '1rem', bottom: '2rem' } },
+            return (this.$render("i-panel", { id: "wrapPnl", padding: { left: '1rem', right: '1rem', top: '1rem', bottom: '2rem' } },
                 this.$render("i-panel", { id: 'pnlEditor', padding: {
                         top: '0.5rem',
                         bottom: '0.5rem',
@@ -379,10 +405,17 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                     customUI: {
                         render: (data, onConfirm) => {
                             const vstack = new components_4.VStack();
+                            const rowParent = this.parent.closest('ide-row');
                             const config = new index_1.default(null, {
                                 content: this._data,
-                                theme: this.theme
+                                theme: this.theme,
+                                margin: { bottom: '1rem' }
                             });
+                            if (rowParent) {
+                                const bgColor = rowParent.style.backgroundColor;
+                                config.background = bgColor ? { color: bgColor } : rowParent.background;
+                            }
+                            config.setTag(Object.assign({}, this.tag));
                             const button = new components_4.Button(null, {
                                 caption: 'Confirm',
                                 background: { color: Theme.colors.primary.main },
@@ -436,15 +469,6 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             if (this.pnlMarkdownEditor) {
                 this.pnlMarkdownEditor.background.color = background;
             }
-            // TODO: update data
-            // if (this.mdEditor) {
-            //     if (width) this.mdEditor.width = width;
-            //     if (height) this.mdEditor.height = height;
-            //     const container = this.mdEditor.querySelector('.toastui-editor-ww-container') as HTMLElement;
-            //     if (container) {
-            //         container.style.background = background;
-            //     }
-            // }
             if (this.mdViewer) {
                 if (width)
                     this.mdViewer.width = width;

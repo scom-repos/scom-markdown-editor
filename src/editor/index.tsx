@@ -16,6 +16,7 @@ const Theme = Styles.Theme.ThemeVars
 interface ScomEditorConfigElement extends ControlElement {
   content?: string
   theme?: string
+  tag?: any
 }
 
 declare global {
@@ -37,10 +38,12 @@ export default class Config extends Module {
   private btnStop: Button
   private btnSend: Button
   private pnlWaiting: Panel
+  private wrapPnl: Panel
 
   private _data: string = ''
   private _theme: ThemeType = 'light'
   private isStopped: boolean = false
+  tag: any = {};
 
   get content() {
     return this.mdEditor?.getMarkdownValue() || this._data
@@ -58,6 +61,24 @@ export default class Config extends Module {
     if (this.mdEditor) this.mdEditor.theme = value
   }
 
+  getTag() {
+    return this.tag;
+  }
+
+  async setTag(value: any) {
+    const { background, textAlign } = value
+    this.tag = { background, textAlign }
+    this.updateMardown()
+  }
+
+  private updateMardown() {
+    if (this.wrapPnl) {
+      const { background, textAlign } = this.tag;
+      this.wrapPnl.style.textAlign = textAlign || "left";
+      this.wrapPnl.style.setProperty('--bg-container', background || '');
+    }
+  }
+
   private async renderEditor() {
     if (!this.mdEditor) {
       this.mdEditor = await MarkdownEditor.create({
@@ -73,6 +94,7 @@ export default class Config extends Module {
     }
     this.mdEditor.value = this._data
     this.mdEditor.theme = this.theme
+    this.updateMardown()
   }
 
   private toggleStopBtn(value: boolean) {
@@ -128,12 +150,15 @@ export default class Config extends Module {
     this.content = this.getAttribute('content', true, '')
     const themeAttr = this.getAttribute('theme', true)
     if (themeAttr) this.theme = themeAttr
+    const tag = this.getAttribute('tag', true)
+    if (tag) this.setTag(tag)
     this.renderEditor()
   }
 
   render() {
     return (
       <i-panel
+        id="wrapPnl"
         padding={{ left: '1rem', right: '1rem', top: '1rem', bottom: '2rem' }}
       >
         <i-panel

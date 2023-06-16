@@ -9,7 +9,8 @@ import {
     Styles,
     customElements,
     ControlElement,
-    IDataSchema
+    IDataSchema,
+    Control
 } from '@ijstech/components';
 import './index.css';
 import { setDataFromSCConfig } from './store';
@@ -128,10 +129,17 @@ export default class ScomMarkdownEditor extends Module {
                 customUI: {
                     render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => {
                         const vstack = new VStack();
+                        const rowParent = this.parent.closest('ide-row') as Control;
                         const config = new Config(null, {
                             content: this._data,
-                            theme: this.theme
+                            theme: this.theme,
+                            margin: {bottom: '1rem'}
                         });
+                        if (rowParent) {
+                            const bgColor = rowParent.style.backgroundColor;
+                            config.background = bgColor ? {color: bgColor} : rowParent.background;
+                        }
+                        config.setTag({...this.tag});
                         const button = new Button(null, {
                             caption: 'Confirm',
                             background: {color: Theme.colors.primary.main},
@@ -180,15 +188,6 @@ export default class ScomMarkdownEditor extends Module {
         if (this.pnlMarkdownEditor) {
             this.pnlMarkdownEditor.background.color = background;
         }
-        // TODO: update data
-        // if (this.mdEditor) {
-        //     if (width) this.mdEditor.width = width;
-        //     if (height) this.mdEditor.height = height;
-        //     const container = this.mdEditor.querySelector('.toastui-editor-ww-container') as HTMLElement;
-        //     if (container) {
-        //         container.style.background = background;
-        //     }
-        // }
         if (this.mdViewer) {
             if (width) this.mdViewer.width = width;
             if (height) this.mdViewer.height = height;

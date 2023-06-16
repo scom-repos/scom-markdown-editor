@@ -31,6 +31,7 @@ declare module "@scom/scom-markdown-editor/editor/index.tsx" {
     interface ScomEditorConfigElement extends ControlElement {
         content?: string;
         theme?: string;
+        tag?: any;
     }
     global {
         namespace JSX {
@@ -47,13 +48,18 @@ declare module "@scom/scom-markdown-editor/editor/index.tsx" {
         private btnStop;
         private btnSend;
         private pnlWaiting;
+        private wrapPnl;
         private _data;
         private _theme;
         private isStopped;
+        tag: any;
         get content(): string;
         set content(value: string);
         get theme(): ThemeType;
         set theme(value: ThemeType);
+        getTag(): any;
+        setTag(value: any): Promise<void>;
+        private updateMardown;
         private renderEditor;
         private toggleStopBtn;
         private readAllChunks;
