@@ -364,11 +364,14 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             super.init();
             const width = this.getAttribute('width', true);
             const height = this.getAttribute('height', true);
+            const initTag = { background: '#fff', textAlign: 'left' };
             if (width || height) {
                 const finalWidth = width ? (typeof this.width === 'string' ? width : `${width}px`) : '100%';
                 const finalHeight = height ? (typeof this.height === 'string' ? height : `${height}px`) : 'auto';
-                this.setTag({ width: finalWidth, height: finalHeight });
+                initTag.width = finalWidth;
+                initTag.height = finalHeight;
             }
+            this.setTag(initTag);
             const lazyLoad = this.getAttribute('lazyLoad', true, false);
             if (!lazyLoad) {
                 const themeAttr = this.getAttribute('theme', true);
