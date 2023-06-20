@@ -90,7 +90,8 @@ export default class ScomMarkdownEditor extends Module {
         super.init();
         const width = this.getAttribute('width', true);
         const height = this.getAttribute('height', true);
-        const initTag: any = { background: '#fff', textAlign: 'left' };
+        const background = this.theme === 'light' ? '#ffffff' : '#1E1E1E'
+        const initTag: any = { background, textAlign: 'left' };
         if (width || height) {
             const finalWidth = width ? (typeof this.width === 'string' ? width : `${width}px`) : '100%';
             const finalHeight = height ? (typeof this.height === 'string' ? height : `${height}px`) : 'auto';
@@ -98,11 +99,16 @@ export default class ScomMarkdownEditor extends Module {
             initTag.height = finalHeight;
         }
         this.setTag(initTag);
-
         const lazyLoad = this.getAttribute('lazyLoad', true, false);
         if (!lazyLoad) {
             const themeAttr = this.getAttribute('theme', true);
-            if (themeAttr) this.theme = themeAttr
+            if (themeAttr) {
+                this.theme = themeAttr;
+                this.setTag({
+                    ...this.tag,
+                    background: this.theme === 'light' ? '#ffffff' : '#1E1E1E'
+                });
+            }
             this.data = this.getAttribute('data', true, '');
         }
     }

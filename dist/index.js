@@ -364,7 +364,8 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             super.init();
             const width = this.getAttribute('width', true);
             const height = this.getAttribute('height', true);
-            const initTag = { background: '#fff', textAlign: 'left' };
+            const background = this.theme === 'light' ? '#ffffff' : '#1E1E1E';
+            const initTag = { background, textAlign: 'left' };
             if (width || height) {
                 const finalWidth = width ? (typeof this.width === 'string' ? width : `${width}px`) : '100%';
                 const finalHeight = height ? (typeof this.height === 'string' ? height : `${height}px`) : 'auto';
@@ -375,8 +376,10 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             const lazyLoad = this.getAttribute('lazyLoad', true, false);
             if (!lazyLoad) {
                 const themeAttr = this.getAttribute('theme', true);
-                if (themeAttr)
+                if (themeAttr) {
                     this.theme = themeAttr;
+                    this.setTag(Object.assign(Object.assign({}, this.tag), { background: this.theme === 'light' ? '#ffffff' : '#1E1E1E' }));
+                }
                 this.data = this.getAttribute('data', true, '');
             }
         }
