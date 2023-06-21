@@ -331,6 +331,8 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_4.Styles.Theme.ThemeVars;
+    const lightTheme = components_4.Styles.Theme.defaultTheme;
+    const darkTheme = components_4.Styles.Theme.darkTheme;
     let ScomMarkdownEditor = class ScomMarkdownEditor extends components_4.Module {
         constructor(parent, options) {
             super(parent, options);
@@ -360,11 +362,14 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             if (this.mdViewer)
                 this.mdViewer.theme = value;
         }
+        getBackgroundColor() {
+            return this.theme === 'light' ? lightTheme.background.main : darkTheme.background.main;
+        }
         async init() {
             super.init();
             const width = this.getAttribute('width', true);
             const height = this.getAttribute('height', true);
-            const background = this.theme === 'light' ? '#ffffff' : '#1E1E1E';
+            const background = this.getBackgroundColor();
             const initTag = { background, textAlign: 'left' };
             if (width || height) {
                 const finalWidth = width ? (typeof this.width === 'string' ? width : `${width}px`) : '100%';
@@ -378,7 +383,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                 const themeAttr = this.getAttribute('theme', true);
                 if (themeAttr) {
                     this.theme = themeAttr;
-                    this.setTag(Object.assign(Object.assign({}, this.tag), { background: this.theme === 'light' ? '#ffffff' : '#1E1E1E' }));
+                    this.setTag(Object.assign(Object.assign({}, this.tag), { background: this.getBackgroundColor() }));
                 }
                 this.data = this.getAttribute('data', true, '');
             }
@@ -499,12 +504,19 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             return this.tag;
         }
         async setTag(value) {
-            let { width, height, background, textAlign } = value;
-            width = typeof width === 'string' ? width : `${width}px`;
-            height = typeof height === 'string' ? height : `${height}px`;
-            this.height = height || 'auto';
-            this.tag = { width, height, background, textAlign };
-            this.pnlMarkdownEditor.style.textAlign = textAlign || "left";
+            var _a, _b;
+            const newValue = value || {};
+            for (let prop in newValue) {
+                if (newValue.hasOwnProperty(prop)) {
+                    if (prop === 'width' || prop === 'height') {
+                        this.tag[prop] = typeof newValue[prop] === 'string' ? newValue[prop] : `${newValue[prop]}px`;
+                    }
+                    else
+                        this.tag[prop] = newValue[prop];
+                }
+            }
+            this.height = ((_a = this.tag) === null || _a === void 0 ? void 0 : _a.height) || 'auto';
+            this.pnlMarkdownEditor.style.textAlign = ((_b = this.tag) === null || _b === void 0 ? void 0 : _b.textAlign) || "left";
             this.updateMarkdown(value);
         }
         getConfigurators() {

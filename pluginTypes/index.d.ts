@@ -109,6 +109,7 @@ declare module "@scom/scom-markdown-editor" {
         set data(value: string);
         get theme(): ThemeType;
         set theme(value: ThemeType);
+        private getBackgroundColor;
         init(): Promise<void>;
         private _getActions;
         private updateMarkdown;
