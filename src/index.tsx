@@ -55,6 +55,7 @@ export default class ScomMarkdownEditor extends Module {
 
     private _data: string;
     private _theme: ThemeType = 'light';
+    private isSetBg: boolean = false;
 
     readonly onEdit: () => Promise<void>;
     readonly onConfirm: () => Promise<void>;
@@ -80,16 +81,26 @@ export default class ScomMarkdownEditor extends Module {
     }
 
     get theme() {
-        return this._theme
+        return this._theme ?? 'light';
     }
     set theme(value: ThemeType) {
-        this._theme = value;
+        this._theme = value ?? 'light';
+        if (this.pnlMarkdownEditor && !this.isSetBg) {
+            this.tag.background = this.getBackgroundColor();
+            this.pnlMarkdownEditor.background.color = this.tag.background;
+        }
         if (this.mdViewer)
             this.mdViewer.theme = value
     }
 
     private getBackgroundColor() {
-        return this.theme === 'light' ? lightTheme.background.main : darkTheme.background.main;
+        const rowParent = this.parent.closest('ide-row') as Control;
+        let background = '';
+        if (rowParent) {
+            background = rowParent.style.backgroundColor || rowParent.background?.color;
+        }
+        const bgByTheme = this.theme === 'light' ? lightTheme.background.main : darkTheme.background.main;
+        return background || bgByTheme;
     }
 
     async init() {
@@ -104,7 +115,7 @@ export default class ScomMarkdownEditor extends Module {
             initTag.width = finalWidth;
             initTag.height = finalHeight;
         }
-        this.setTag(initTag);
+        this.setTag(initTag, true);
         const lazyLoad = this.getAttribute('lazyLoad', true, false);
         if (!lazyLoad) {
             const themeAttr = this.getAttribute('theme', true);
@@ -113,7 +124,7 @@ export default class ScomMarkdownEditor extends Module {
                 this.setTag({
                     ...this.tag,
                     background: this.getBackgroundColor()
-                });
+                }, true);
             }
             this.data = this.getAttribute('data', true, '');
         }
@@ -229,8 +240,10 @@ export default class ScomMarkdownEditor extends Module {
         return this.tag;
     }
 
-    private async setTag(value: any) {
+    private async setTag(value: any, init?: boolean) {
         const newValue = value || {};
+        if (newValue.hasOwnProperty('background') && !init)
+            this.isSetBg = true;
         for (let prop in newValue) {
             if (newValue.hasOwnProperty(prop)) {
                 if (prop === 'width' || prop === 'height') {
@@ -241,7 +254,7 @@ export default class ScomMarkdownEditor extends Module {
         }
         this.height = this.tag?.height || 'auto';
         this.pnlMarkdownEditor.style.textAlign = this.tag?.textAlign || "left";
-        this.updateMarkdown(value);
+        this.updateMarkdown(this.tag);
     }
 
     getConfigurators() {
