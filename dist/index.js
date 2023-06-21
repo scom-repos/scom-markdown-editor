@@ -339,6 +339,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             this.tag = {};
             this.defaultEdit = true;
             this._theme = 'light';
+            this.isSetBg = false;
             if (data_json_1.default)
                 store_2.setDataFromSCConfig(data_json_1.default);
         }
@@ -355,15 +356,27 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             this.setData({ content: value });
         }
         get theme() {
-            return this._theme;
+            var _a;
+            return (_a = this._theme) !== null && _a !== void 0 ? _a : 'light';
         }
         set theme(value) {
-            this._theme = value;
+            this._theme = value !== null && value !== void 0 ? value : 'light';
+            if (this.pnlMarkdownEditor && !this.isSetBg) {
+                this.tag.background = this.getBackgroundColor();
+                this.pnlMarkdownEditor.background.color = this.tag.background;
+            }
             if (this.mdViewer)
                 this.mdViewer.theme = value;
         }
         getBackgroundColor() {
-            return this.theme === 'light' ? lightTheme.background.main : darkTheme.background.main;
+            var _a;
+            const rowParent = this.parent.closest('ide-row');
+            let background = '';
+            if (rowParent) {
+                background = rowParent.style.backgroundColor || ((_a = rowParent.background) === null || _a === void 0 ? void 0 : _a.color);
+            }
+            const bgByTheme = this.theme === 'light' ? lightTheme.background.main : darkTheme.background.main;
+            return background || bgByTheme;
         }
         async init() {
             super.init();
@@ -377,13 +390,13 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                 initTag.width = finalWidth;
                 initTag.height = finalHeight;
             }
-            this.setTag(initTag);
+            this.setTag(initTag, true);
             const lazyLoad = this.getAttribute('lazyLoad', true, false);
             if (!lazyLoad) {
                 const themeAttr = this.getAttribute('theme', true);
                 if (themeAttr) {
                     this.theme = themeAttr;
-                    this.setTag(Object.assign(Object.assign({}, this.tag), { background: this.getBackgroundColor() }));
+                    this.setTag(Object.assign(Object.assign({}, this.tag), { background: this.getBackgroundColor() }), true);
                 }
                 this.data = this.getAttribute('data', true, '');
             }
@@ -503,9 +516,11 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
         getTag() {
             return this.tag;
         }
-        async setTag(value) {
+        async setTag(value, init) {
             var _a, _b;
             const newValue = value || {};
+            if (newValue.hasOwnProperty('background') && !init)
+                this.isSetBg = true;
             for (let prop in newValue) {
                 if (newValue.hasOwnProperty(prop)) {
                     if (prop === 'width' || prop === 'height') {
@@ -517,7 +532,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             }
             this.height = ((_a = this.tag) === null || _a === void 0 ? void 0 : _a.height) || 'auto';
             this.pnlMarkdownEditor.style.textAlign = ((_b = this.tag) === null || _b === void 0 ? void 0 : _b.textAlign) || "left";
-            this.updateMarkdown(value);
+            this.updateMarkdown(this.tag);
         }
         getConfigurators() {
             return [
