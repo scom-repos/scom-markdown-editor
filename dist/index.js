@@ -331,6 +331,8 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_4.Styles.Theme.ThemeVars;
+    const lightTheme = components_4.Styles.Theme.defaultTheme;
+    const darkTheme = components_4.Styles.Theme.darkTheme;
     let ScomMarkdownEditor = class ScomMarkdownEditor extends components_4.Module {
         constructor(parent, options) {
             super(parent, options);
@@ -360,11 +362,14 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             if (this.mdViewer)
                 this.mdViewer.theme = value;
         }
+        getBackgroundColor() {
+            return this.theme === 'light' ? lightTheme.background.main : darkTheme.background.main;
+        }
         async init() {
             super.init();
             const width = this.getAttribute('width', true);
             const height = this.getAttribute('height', true);
-            const background = this.theme === 'light' ? '#ffffff' : '#1E1E1E';
+            const background = this.getBackgroundColor();
             const initTag = { background, textAlign: 'left' };
             if (width || height) {
                 const finalWidth = width ? (typeof this.width === 'string' ? width : `${width}px`) : '100%';
@@ -378,7 +383,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                 const themeAttr = this.getAttribute('theme', true);
                 if (themeAttr) {
                     this.theme = themeAttr;
-                    this.setTag(Object.assign(Object.assign({}, this.tag), { background: this.theme === 'light' ? '#ffffff' : '#1E1E1E' }));
+                    this.setTag(Object.assign(Object.assign({}, this.tag), { background: this.getBackgroundColor() }));
                 }
                 this.data = this.getAttribute('data', true, '');
             }

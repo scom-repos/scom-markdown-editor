@@ -18,6 +18,8 @@ import scconfig from './data.json';
 import Config from './editor/index';
 
 const Theme = Styles.Theme.ThemeVars;
+const lightTheme = Styles.Theme.defaultTheme;
+const darkTheme = Styles.Theme.darkTheme;
 
 export interface IConfigData {
     width?: string;
@@ -86,11 +88,15 @@ export default class ScomMarkdownEditor extends Module {
             this.mdViewer.theme = value
     }
 
+    private getBackgroundColor() {
+        return this.theme === 'light' ? lightTheme.background.main : darkTheme.background.main;
+    }
+
     async init() {
         super.init();
         const width = this.getAttribute('width', true);
         const height = this.getAttribute('height', true);
-        const background = this.theme === 'light' ? '#ffffff' : '#1E1E1E'
+        const background = this.getBackgroundColor();
         const initTag: any = { background, textAlign: 'left' };
         if (width || height) {
             const finalWidth = width ? (typeof this.width === 'string' ? width : `${width}px`) : '100%';
@@ -106,7 +112,7 @@ export default class ScomMarkdownEditor extends Module {
                 this.theme = themeAttr;
                 this.setTag({
                     ...this.tag,
-                    background: this.theme === 'light' ? '#ffffff' : '#1E1E1E'
+                    background: this.getBackgroundColor()
                 });
             }
             this.data = this.getAttribute('data', true, '');
