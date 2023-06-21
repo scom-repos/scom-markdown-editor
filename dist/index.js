@@ -499,12 +499,19 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             return this.tag;
         }
         async setTag(value) {
-            let { width, height, background, textAlign } = value;
-            width = typeof width === 'string' ? width : `${width}px`;
-            height = typeof height === 'string' ? height : `${height}px`;
-            this.height = height || 'auto';
-            this.tag = { width, height, background, textAlign };
-            this.pnlMarkdownEditor.style.textAlign = textAlign || "left";
+            var _a, _b;
+            const newValue = value || {};
+            for (let prop in newValue) {
+                if (newValue.hasOwnProperty(prop)) {
+                    if (prop === 'width' || prop === 'height') {
+                        this.tag[prop] = typeof newValue[prop] === 'string' ? newValue[prop] : `${newValue[prop]}px`;
+                    }
+                    else
+                        this.tag[prop] = newValue[prop];
+                }
+            }
+            this.height = ((_a = this.tag) === null || _a === void 0 ? void 0 : _a.height) || 'auto';
+            this.pnlMarkdownEditor.style.textAlign = ((_b = this.tag) === null || _b === void 0 ? void 0 : _b.textAlign) || "left";
             this.updateMarkdown(value);
         }
         getConfigurators() {

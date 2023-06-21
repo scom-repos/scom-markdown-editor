@@ -224,12 +224,17 @@ export default class ScomMarkdownEditor extends Module {
     }
 
     private async setTag(value: any) {
-        let { width, height, background, textAlign } = value;
-        width = typeof width === 'string' ? width : `${width}px`;
-        height = typeof height === 'string' ? height : `${height}px`;
-        this.height = height || 'auto';
-        this.tag = { width, height, background, textAlign };
-        this.pnlMarkdownEditor.style.textAlign = textAlign || "left";
+        const newValue = value || {};
+        for (let prop in newValue) {
+            if (newValue.hasOwnProperty(prop)) {
+                if (prop === 'width' || prop === 'height') {
+                    this.tag[prop] = typeof newValue[prop] === 'string' ? newValue[prop] : `${newValue[prop]}px`;
+                }
+                else this.tag[prop] = newValue[prop];
+            }
+        }
+        this.height = this.tag?.height || 'auto';
+        this.pnlMarkdownEditor.style.textAlign = this.tag?.textAlign || "left";
         this.updateMarkdown(value);
     }
 
