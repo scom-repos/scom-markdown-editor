@@ -369,11 +369,11 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                 this.mdViewer.theme = value;
         }
         getBackgroundColor() {
-            var _a;
             const rowParent = this.parent.closest('ide-row');
             let background = '';
             if (rowParent) {
-                background = rowParent.style.backgroundColor || ((_a = rowParent.background) === null || _a === void 0 ? void 0 : _a.color);
+                const rowStyles = window.getComputedStyle(rowParent, null);
+                background = rowParent.background.color || (rowStyles === null || rowStyles === void 0 ? void 0 : rowStyles.backgroundColor);
             }
             const bgByTheme = this.theme === 'light' ? lightTheme.background.main : darkTheme.background.main;
             return background || bgByTheme;
@@ -428,18 +428,13 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                     userInputDataSchema: {},
                     customUI: {
                         render: (data, onConfirm) => {
-                            var _a;
                             const vstack = new components_4.VStack();
-                            const rowParent = this.parent.closest('ide-row');
                             const config = new index_1.default(null, {
                                 content: this._data,
                                 theme: this.theme,
                                 margin: { bottom: '1rem' }
                             });
-                            if (rowParent) {
-                                const bgColor = rowParent.style.backgroundColor;
-                                config.background = { color: bgColor || ((_a = rowParent.background) === null || _a === void 0 ? void 0 : _a.color) || '' };
-                            }
+                            config.background = { color: this.getBackgroundColor() }; // bg for editor parent
                             config.setTag(Object.assign({}, this.tag));
                             const button = new components_4.Button(null, {
                                 caption: 'Confirm',
@@ -525,6 +520,10 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                 if (newValue.hasOwnProperty(prop)) {
                     if (prop === 'width' || prop === 'height') {
                         this.tag[prop] = typeof newValue[prop] === 'string' ? newValue[prop] : `${newValue[prop]}px`;
+                    }
+                    else if (prop === 'background') {
+                        const canNotSetBg = this.isSetBg && init;
+                        this.tag[prop] = canNotSetBg ? this.tag[prop] : newValue[prop];
                     }
                     else
                         this.tag[prop] = newValue[prop];
