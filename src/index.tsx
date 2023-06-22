@@ -94,7 +94,7 @@ export default class ScomMarkdownEditor extends Module {
     }
 
     private getBackgroundColor() {
-        const rowParent = this.parent.closest('ide-row') as Control;
+        const rowParent = this.closest('ide-row') as Control;
         let background = '';
         if (rowParent) {
             const rowStyles = window.getComputedStyle(rowParent, null);

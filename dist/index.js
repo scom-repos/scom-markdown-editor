@@ -369,7 +369,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                 this.mdViewer.theme = value;
         }
         getBackgroundColor() {
-            const rowParent = this.parent.closest('ide-row');
+            const rowParent = this.closest('ide-row');
             let background = '';
             if (rowParent) {
                 const rowStyles = window.getComputedStyle(rowParent, null);
