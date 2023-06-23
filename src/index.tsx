@@ -55,6 +55,7 @@ export default class ScomMarkdownEditor extends Module {
 
     private _data: string;
     private _theme: ThemeType = 'light';
+    private _rootParent: Control;
     private isSetBg: boolean = false;
 
     readonly onEdit: () => Promise<void>;
@@ -93,12 +94,17 @@ export default class ScomMarkdownEditor extends Module {
             this.mdViewer.theme = value
     }
 
+    private setRootParent(parent: Control) {
+        this._rootParent = parent;
+        const newTag = {...this.tag, background: this.getBackgroundColor()};
+        this.setTag(newTag, true);
+    }
+
     private getBackgroundColor() {
-        const rowParent = this.closest('ide-row') as Control;
         let background = '';
-        if (rowParent) {
-            const rowStyles = window.getComputedStyle(rowParent, null);
-            background = rowParent.background.color || rowStyles?.backgroundColor;
+        if (this._rootParent) {
+            const rowStyles = window.getComputedStyle(this._rootParent, null);
+            background = this._rootParent.background.color || rowStyles?.backgroundColor;
         }
         const bgByTheme = this.theme === 'light' ? lightTheme.background.main : darkTheme.background.main;
         return background || bgByTheme;
@@ -272,7 +278,8 @@ export default class ScomMarkdownEditor extends Module {
                     await this.setData({ ...defaultData, ...data })
                 },
                 getTag: this.getTag.bind(this),
-                setTag: this.setTag.bind(this)
+                setTag: this.setTag.bind(this),
+                setRootParent: this.setRootParent.bind(this)
             },
             {
                 name: 'Emdedder Configurator',

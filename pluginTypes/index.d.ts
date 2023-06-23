@@ -100,6 +100,7 @@ declare module "@scom/scom-markdown-editor" {
         defaultEdit: boolean;
         private _data;
         private _theme;
+        private _rootParent;
         private isSetBg;
         readonly onEdit: () => Promise<void>;
         readonly onConfirm: () => Promise<void>;
@@ -110,6 +111,7 @@ declare module "@scom/scom-markdown-editor" {
         set data(value: string);
         get theme(): ThemeType;
         set theme(value: ThemeType);
+        private setRootParent;
         private getBackgroundColor;
         init(): Promise<void>;
         private _getActions;
@@ -151,6 +153,7 @@ declare module "@scom/scom-markdown-editor" {
             setData: (data: any) => Promise<void>;
             getTag: any;
             setTag: any;
+            setRootParent: any;
         } | {
             name: string;
             target: string;
@@ -159,6 +162,7 @@ declare module "@scom/scom-markdown-editor" {
             getTag: any;
             setTag: any;
             getActions?: undefined;
+            setRootParent?: undefined;
         })[];
         private getThemeSchema;
         render(): any;
