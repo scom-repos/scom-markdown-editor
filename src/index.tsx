@@ -94,10 +94,11 @@ export default class ScomMarkdownEditor extends Module {
     }
 
     private getBackgroundColor() {
-        const rowParent = this.parent.closest('ide-row') as Control;
+        const rowParent = this.closest('ide-row') as Control;
         let background = '';
         if (rowParent) {
-            background = rowParent.style.backgroundColor || rowParent.background?.color;
+            const rowStyles = window.getComputedStyle(rowParent, null);
+            background = rowParent.background.color || rowStyles?.backgroundColor;
         }
         const bgByTheme = this.theme === 'light' ? lightTheme.background.main : darkTheme.background.main;
         return background || bgByTheme;
@@ -156,16 +157,12 @@ export default class ScomMarkdownEditor extends Module {
                 customUI: {
                     render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => {
                         const vstack = new VStack();
-                        const rowParent = this.parent.closest('ide-row') as Control;
                         const config = new Config(null, {
                             content: this._data,
                             theme: this.theme,
                             margin: {bottom: '1rem'}
                         });
-                        if (rowParent) {
-                            const bgColor = rowParent.style.backgroundColor;
-                            config.background = {color: bgColor || rowParent.background?.color || ''};
-                        }
+                        config.background = {color: this.getBackgroundColor()}; // bg for editor parent
                         config.setTag({...this.tag});
                         const button = new Button(null, {
                             caption: 'Confirm',
@@ -248,6 +245,9 @@ export default class ScomMarkdownEditor extends Module {
             if (newValue.hasOwnProperty(prop)) {
                 if (prop === 'width' || prop === 'height') {
                     this.tag[prop] = typeof newValue[prop] === 'string' ? newValue[prop] : `${newValue[prop]}px`;
+                } else if (prop === 'background') {
+                    const canNotSetBg = this.isSetBg && init;
+                    this.tag[prop] = canNotSetBg ? this.tag[prop] : newValue[prop];
                 }
                 else this.tag[prop] = newValue[prop];
             }
