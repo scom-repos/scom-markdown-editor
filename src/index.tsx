@@ -195,13 +195,13 @@ export default class ScomMarkdownEditor extends Module {
                         execute: async () => {
                             if (!userInputData) return;
                             oldTag = { ...this.tag };
-                            this.setTag(userInputData);
                             if (builder) builder.setTag(userInputData);
+                            else this.setTag(userInputData);
                         },
                         undo: () => {
                             if (!userInputData) return;
-                            this.setTag(oldTag);
                             if (builder) builder.setTag(oldTag);
+                            else this.setTag(oldTag);
                         },
                         redo: () => { }
                     }
@@ -252,8 +252,14 @@ export default class ScomMarkdownEditor extends Module {
                 if (prop === 'width' || prop === 'height') {
                     this.tag[prop] = typeof newValue[prop] === 'string' ? newValue[prop] : `${newValue[prop]}px`;
                 } else if (prop === 'background') {
+                    let parentBg = '';
+                    if (this._rootParent) {
+                        const rowStyles = window.getComputedStyle(this._rootParent, null);
+                        parentBg = this._rootParent.background.color || rowStyles?.backgroundColor;
+                    }
                     const canNotSetBg = this.isSetBg && init;
-                    this.tag[prop] = canNotSetBg ? this.tag[prop] : newValue[prop];
+                    const hasParentBg = parentBg && !this.isSetBg && init;
+                    this.tag[prop] = canNotSetBg ? this.tag[prop] : (hasParentBg ? parentBg : newValue[prop]);
                 }
                 else this.tag[prop] = newValue[prop];
             }
