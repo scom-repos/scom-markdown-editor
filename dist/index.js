@@ -339,7 +339,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             this.tag = {};
             this.defaultEdit = true;
             this._theme = 'light';
-            this.isSetBg = false;
+            this.bgString = '';
             if (data_json_1.default)
                 store_2.setDataFromSCConfig(data_json_1.default);
         }
@@ -361,7 +361,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
         }
         set theme(value) {
             this._theme = value !== null && value !== void 0 ? value : 'light';
-            if (this.pnlMarkdownEditor && !this.isSetBg) {
+            if (this.pnlMarkdownEditor && !this.bgString) {
                 this.tag.background = this.getBackgroundColor();
                 this.pnlMarkdownEditor.background.color = this.tag.background;
             }
@@ -462,11 +462,16 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                     visible: () => themeSchema != null && themeSchema != undefined,
                     command: (builder, userInputData) => {
                         let oldTag = {};
+                        let oldBgStr = '';
                         return {
                             execute: async () => {
                                 if (!userInputData)
                                     return;
                                 oldTag = Object.assign({}, this.tag);
+                                oldBgStr = this.bgString;
+                                if (userInputData.hasOwnProperty('background')) {
+                                    this.bgString = userInputData.background;
+                                }
                                 if (builder)
                                     builder.setTag(userInputData);
                                 else
@@ -475,6 +480,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                             undo: () => {
                                 if (!userInputData)
                                     return;
+                                this.bgString = '';
                                 if (builder)
                                     builder.setTag(oldTag);
                                 else
@@ -520,8 +526,6 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
         async setTag(value, init) {
             var _a, _b;
             const newValue = value || {};
-            if (newValue.hasOwnProperty('background') && !init)
-                this.isSetBg = true;
             for (let prop in newValue) {
                 if (newValue.hasOwnProperty(prop)) {
                     if (prop === 'width' || prop === 'height') {
@@ -533,8 +537,8 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                             const rowStyles = window.getComputedStyle(this._rootParent, null);
                             parentBg = this._rootParent.background.color || (rowStyles === null || rowStyles === void 0 ? void 0 : rowStyles.backgroundColor);
                         }
-                        const canNotSetBg = this.isSetBg && init;
-                        const hasParentBg = parentBg && !this.isSetBg && init;
+                        const canNotSetBg = this.bgString && init;
+                        const hasParentBg = parentBg && !this.bgString && init;
                         this.tag[prop] = canNotSetBg ? this.tag[prop] : (hasParentBg ? parentBg : newValue[prop]);
                     }
                     else
