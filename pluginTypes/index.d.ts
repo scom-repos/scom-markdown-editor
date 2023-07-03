@@ -101,7 +101,7 @@ declare module "@scom/scom-markdown-editor" {
         private _data;
         private _theme;
         private _rootParent;
-        private isSetBg;
+        private bgString;
         readonly onEdit: () => Promise<void>;
         readonly onConfirm: () => Promise<void>;
         readonly onDiscard: () => Promise<void>;
