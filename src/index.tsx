@@ -56,7 +56,6 @@ export default class ScomMarkdownEditor extends Module {
     private _data: string;
     private _theme: ThemeType = 'light';
     private _rootParent: Control;
-    private bgString: string = '';
 
     readonly onEdit: () => Promise<void>;
     readonly onConfirm: () => Promise<void>;
@@ -86,7 +85,7 @@ export default class ScomMarkdownEditor extends Module {
     }
     set theme(value: ThemeType) {
         this._theme = value ?? 'light';
-        if (this.pnlMarkdownEditor && !this.bgString) {
+        if (this.pnlMarkdownEditor && !this.tag?.settingColor) {
             this.tag.background = this.getBackgroundColor();
             this.pnlMarkdownEditor.background.color = this.tag.background;
         }
@@ -97,7 +96,7 @@ export default class ScomMarkdownEditor extends Module {
     private setRootParent(parent: Control) {
         this._rootParent = parent;
         const newTag = {...this.tag, background: this.getBackgroundColor()};
-        this.setTag(newTag, true);
+        this.setTag(newTag);
     }
 
     private getBackgroundColor() {
@@ -106,8 +105,12 @@ export default class ScomMarkdownEditor extends Module {
             const rowStyles = window.getComputedStyle(this._rootParent, null);
             background = this._rootParent.background.color || rowStyles?.backgroundColor;
         }
+        return background || this.getDefaultThemeColor();
+    }
+
+    private getDefaultThemeColor() {
         const bgByTheme = this.theme === 'light' ? lightTheme.background.main : darkTheme.background.main;
-        return background || bgByTheme;
+        return bgByTheme;
     }
 
     async init() {
@@ -115,14 +118,14 @@ export default class ScomMarkdownEditor extends Module {
         const width = this.getAttribute('width', true);
         const height = this.getAttribute('height', true);
         const background = this.getBackgroundColor();
-        const initTag: any = { background, textAlign: 'left' };
+        const initTag: any = { background, textAlign: 'left', settingColor: '' };
         if (width || height) {
             const finalWidth = width ? (typeof this.width === 'string' ? width : `${width}px`) : '100%';
             const finalHeight = height ? (typeof this.height === 'string' ? height : `${height}px`) : 'auto';
             initTag.width = finalWidth;
             initTag.height = finalHeight;
         }
-        this.setTag(initTag, true);
+        this.setTag(initTag);
         const lazyLoad = this.getAttribute('lazyLoad', true, false);
         if (!lazyLoad) {
             const themeAttr = this.getAttribute('theme', true);
@@ -130,8 +133,9 @@ export default class ScomMarkdownEditor extends Module {
                 this.theme = themeAttr;
                 this.setTag({
                     ...this.tag,
-                    background: this.getBackgroundColor()
-                }, true);
+                    settingColor: '',
+                    background
+                });
             }
             this.data = this.getAttribute('data', true, '');
         }
@@ -194,17 +198,25 @@ export default class ScomMarkdownEditor extends Module {
                     return {
                         execute: async () => {
                             if (!userInputData) return;
-                            oldTag = { ...this.tag };
-                            if (userInputData.hasOwnProperty('background'))
-                                this.bgString = userInputData.background;
-                            if (builder) builder.setTag(userInputData);
-                            else this.setTag(userInputData);
+                            oldTag = JSON.parse(JSON.stringify(this.tag));
+                            if (userInputData.background) {
+                                this.tag.background = userInputData.background;
+                                this.tag.settingColor = userInputData.background
+                            }
+                            if (userInputData.width)
+                                this.tag.width = userInputData.width;
+                            if (userInputData.height)
+                                this.tag.height = userInputData.height;
+                            if (userInputData.textAlign)
+                                this.tag.textAlign = userInputData.textAlign;
+                            if (builder) builder.setTag(this.tag);
+                            else this.setTag(this.tag);
                         },
                         undo: () => {
                             if (!userInputData) return;
-                            this.bgString = '';
-                            if (builder) builder.setTag(oldTag);
-                            else this.setTag(oldTag);
+                            this.tag = JSON.parse(JSON.stringify(oldTag));
+                            if (builder) builder.setTag(this.tag);
+                            else this.setTag(this.tag);
                         },
                         redo: () => { }
                     }
@@ -215,11 +227,12 @@ export default class ScomMarkdownEditor extends Module {
         return actions;
     }
 
-    private updateMarkdown(config: IConfigData) {
+    private updateMarkdown(config: any) {
         if (!config) return;
-        const { width, height, background } = config;
+        const { width, height, background, textAlign = 'left' } = config;
         if (this.pnlMarkdownEditor) {
             this.pnlMarkdownEditor.background.color = background;
+            this.pnlMarkdownEditor.style.textAlign = textAlign;
         }
         if (this.mdViewer) {
             if (width) this.mdViewer.width = width;
@@ -246,28 +259,20 @@ export default class ScomMarkdownEditor extends Module {
         return this.tag;
     }
 
-    private async setTag(value: any, init?: boolean) {
+    private async setTag(value: any) {
         const newValue = value || {};
         for (let prop in newValue) {
             if (newValue.hasOwnProperty(prop)) {
                 if (prop === 'width' || prop === 'height') {
                     this.tag[prop] = typeof newValue[prop] === 'string' ? newValue[prop] : `${newValue[prop]}px`;
                 } else if (prop === 'background') {
-                    let parentBg = '';
-                    if (this._rootParent) {
-                        const rowStyles = window.getComputedStyle(this._rootParent, null);
-                        parentBg = this._rootParent.background.color || rowStyles?.backgroundColor;
-                    }
-                    const canNotSetBg = this.bgString && init;
-                    const hasParentBg = parentBg && !this.bgString && init;
-                    this.tag[prop] = canNotSetBg ? this.tag[prop] : (hasParentBg ? parentBg : newValue[prop]);
+                    this.tag.background = newValue?.settingColor || this.getBackgroundColor();
                 }
                 else this.tag[prop] = newValue[prop];
             }
         }
         this.height = this.tag?.height || 'auto';
-        this.pnlMarkdownEditor.style.textAlign = this.tag?.textAlign || "left";
-        this.updateMarkdown(this.tag);
+        this.updateMarkdown({...this.tag});
     }
 
     getConfigurators() {
