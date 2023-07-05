@@ -338,8 +338,8 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             super(parent, options);
             this.tag = {};
             this.defaultEdit = true;
+            this.oldDefaultBg = '';
             this._theme = 'light';
-            this.bgString = '';
             if (data_json_1.default)
                 store_2.setDataFromSCConfig(data_json_1.default);
         }
@@ -361,7 +361,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
         }
         set theme(value) {
             this._theme = value !== null && value !== void 0 ? value : 'light';
-            if (this.pnlMarkdownEditor && !this.bgString) {
+            if (this.pnlMarkdownEditor && !this.isDefaultColor()) {
                 this.tag.background = this.getBackgroundColor();
                 this.pnlMarkdownEditor.background.color = this.tag.background;
             }
@@ -371,7 +371,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
         setRootParent(parent) {
             this._rootParent = parent;
             const newTag = Object.assign(Object.assign({}, this.tag), { background: this.getBackgroundColor() });
-            this.setTag(newTag, true);
+            this.setTag(newTag);
         }
         getBackgroundColor() {
             let background = '';
@@ -379,8 +379,12 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                 const rowStyles = window.getComputedStyle(this._rootParent, null);
                 background = this._rootParent.background.color || (rowStyles === null || rowStyles === void 0 ? void 0 : rowStyles.backgroundColor);
             }
+            this.oldDefaultBg = background || this.getDefaultThemeColor();
+            return background || this.getDefaultThemeColor();
+        }
+        getDefaultThemeColor() {
             const bgByTheme = this.theme === 'light' ? lightTheme.background.main : darkTheme.background.main;
-            return background || bgByTheme;
+            return bgByTheme;
         }
         async init() {
             super.init();
@@ -394,13 +398,13 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                 initTag.width = finalWidth;
                 initTag.height = finalHeight;
             }
-            this.setTag(initTag, true);
+            this.setTag(initTag);
             const lazyLoad = this.getAttribute('lazyLoad', true, false);
             if (!lazyLoad) {
                 const themeAttr = this.getAttribute('theme', true);
                 if (themeAttr) {
                     this.theme = themeAttr;
-                    this.setTag(Object.assign(Object.assign({}, this.tag), { background: this.getBackgroundColor() }), true);
+                    this.setTag(Object.assign(Object.assign({}, this.tag), { background: this.getBackgroundColor() }));
                 }
                 this.data = this.getAttribute('data', true, '');
             }
@@ -462,15 +466,13 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                     visible: () => themeSchema != null && themeSchema != undefined,
                     command: (builder, userInputData) => {
                         let oldTag = {};
-                        let oldBgStr = '';
                         return {
                             execute: async () => {
                                 if (!userInputData)
                                     return;
-                                oldTag = Object.assign({}, this.tag);
-                                oldBgStr = this.bgString;
+                                oldTag = JSON.parse(JSON.stringify(this.tag));
                                 if (userInputData.hasOwnProperty('background')) {
-                                    this.bgString = userInputData.background;
+                                    this.tag.background = userInputData.background;
                                 }
                                 if (builder)
                                     builder.setTag(userInputData);
@@ -480,7 +482,9 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                             undo: () => {
                                 if (!userInputData)
                                     return;
-                                this.bgString = '';
+                                if (oldTag.hasOwnProperty('background')) {
+                                    this.tag.background = oldTag.background;
+                                }
                                 if (builder)
                                     builder.setTag(oldTag);
                                 else
@@ -497,9 +501,10 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
         updateMarkdown(config) {
             if (!config)
                 return;
-            const { width, height, background } = config;
+            const { width, height, background, textAlign = 'left' } = config;
             if (this.pnlMarkdownEditor) {
                 this.pnlMarkdownEditor.background.color = background;
+                this.pnlMarkdownEditor.style.textAlign = textAlign;
             }
             if (this.mdViewer) {
                 if (width)
@@ -523,31 +528,32 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
         getTag() {
             return this.tag;
         }
-        async setTag(value, init) {
-            var _a, _b;
+        isDefaultColor() {
+            var _a;
+            const oldValue = (_a = this.tag) === null || _a === void 0 ? void 0 : _a.background;
+            return !oldValue ||
+                oldValue === this.oldDefaultBg ||
+                oldValue === this.getBackgroundColor();
+        }
+        async setTag(value) {
+            var _a;
             const newValue = value || {};
+            let newBg = '';
             for (let prop in newValue) {
                 if (newValue.hasOwnProperty(prop)) {
                     if (prop === 'width' || prop === 'height') {
                         this.tag[prop] = typeof newValue[prop] === 'string' ? newValue[prop] : `${newValue[prop]}px`;
                     }
                     else if (prop === 'background') {
-                        let parentBg = '';
-                        if (this._rootParent) {
-                            const rowStyles = window.getComputedStyle(this._rootParent, null);
-                            parentBg = this._rootParent.background.color || (rowStyles === null || rowStyles === void 0 ? void 0 : rowStyles.backgroundColor);
-                        }
-                        const canNotSetBg = this.bgString && init;
-                        const hasParentBg = parentBg && !this.bgString && init;
-                        this.tag[prop] = canNotSetBg ? this.tag[prop] : (hasParentBg ? parentBg : newValue[prop]);
+                        const oldValue = this.tag[prop];
+                        this.tag[prop] = newBg = this.isDefaultColor() ? newValue[prop] || this.getBackgroundColor() : oldValue;
                     }
                     else
                         this.tag[prop] = newValue[prop];
                 }
             }
             this.height = ((_a = this.tag) === null || _a === void 0 ? void 0 : _a.height) || 'auto';
-            this.pnlMarkdownEditor.style.textAlign = ((_b = this.tag) === null || _b === void 0 ? void 0 : _b.textAlign) || "left";
-            this.updateMarkdown(this.tag);
+            this.updateMarkdown(Object.assign(Object.assign({}, this.tag), { background: newBg }));
         }
         getConfigurators() {
             return [

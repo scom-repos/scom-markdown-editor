@@ -52,11 +52,11 @@ export default class ScomMarkdownEditor extends Module {
 
     tag: any = {};
     defaultEdit: boolean = true;
+    private oldDefaultBg: string = '';
 
     private _data: string;
     private _theme: ThemeType = 'light';
     private _rootParent: Control;
-    private bgString: string = '';
 
     readonly onEdit: () => Promise<void>;
     readonly onConfirm: () => Promise<void>;
@@ -86,7 +86,7 @@ export default class ScomMarkdownEditor extends Module {
     }
     set theme(value: ThemeType) {
         this._theme = value ?? 'light';
-        if (this.pnlMarkdownEditor && !this.bgString) {
+        if (this.pnlMarkdownEditor && !this.isDefaultColor()) {
             this.tag.background = this.getBackgroundColor();
             this.pnlMarkdownEditor.background.color = this.tag.background;
         }
@@ -97,7 +97,7 @@ export default class ScomMarkdownEditor extends Module {
     private setRootParent(parent: Control) {
         this._rootParent = parent;
         const newTag = {...this.tag, background: this.getBackgroundColor()};
-        this.setTag(newTag, true);
+        this.setTag(newTag);
     }
 
     private getBackgroundColor() {
@@ -106,8 +106,13 @@ export default class ScomMarkdownEditor extends Module {
             const rowStyles = window.getComputedStyle(this._rootParent, null);
             background = this._rootParent.background.color || rowStyles?.backgroundColor;
         }
+        this.oldDefaultBg = background || this.getDefaultThemeColor();
+        return background || this.getDefaultThemeColor();
+    }
+
+    private getDefaultThemeColor() {
         const bgByTheme = this.theme === 'light' ? lightTheme.background.main : darkTheme.background.main;
-        return background || bgByTheme;
+        return bgByTheme;
     }
 
     async init() {
@@ -122,7 +127,7 @@ export default class ScomMarkdownEditor extends Module {
             initTag.width = finalWidth;
             initTag.height = finalHeight;
         }
-        this.setTag(initTag, true);
+        this.setTag(initTag);
         const lazyLoad = this.getAttribute('lazyLoad', true, false);
         if (!lazyLoad) {
             const themeAttr = this.getAttribute('theme', true);
@@ -131,7 +136,7 @@ export default class ScomMarkdownEditor extends Module {
                 this.setTag({
                     ...this.tag,
                     background: this.getBackgroundColor()
-                }, true);
+                });
             }
             this.data = this.getAttribute('data', true, '');
         }
@@ -194,15 +199,18 @@ export default class ScomMarkdownEditor extends Module {
                     return {
                         execute: async () => {
                             if (!userInputData) return;
-                            oldTag = { ...this.tag };
-                            if (userInputData.hasOwnProperty('background'))
-                                this.bgString = userInputData.background;
+                            oldTag = JSON.parse(JSON.stringify(this.tag));
+                            if (userInputData.hasOwnProperty('background')) {
+                                this.tag.background = userInputData.background;
+                            }
                             if (builder) builder.setTag(userInputData);
                             else this.setTag(userInputData);
                         },
                         undo: () => {
                             if (!userInputData) return;
-                            this.bgString = '';
+                            if (oldTag.hasOwnProperty('background')) {
+                                this.tag.background = oldTag.background;
+                            }
                             if (builder) builder.setTag(oldTag);
                             else this.setTag(oldTag);
                         },
@@ -215,11 +223,12 @@ export default class ScomMarkdownEditor extends Module {
         return actions;
     }
 
-    private updateMarkdown(config: IConfigData) {
+    private updateMarkdown(config: any) {
         if (!config) return;
-        const { width, height, background } = config;
+        const { width, height, background, textAlign = 'left' } = config;
         if (this.pnlMarkdownEditor) {
             this.pnlMarkdownEditor.background.color = background;
+            this.pnlMarkdownEditor.style.textAlign = textAlign;
         }
         if (this.mdViewer) {
             if (width) this.mdViewer.width = width;
@@ -246,28 +255,29 @@ export default class ScomMarkdownEditor extends Module {
         return this.tag;
     }
 
-    private async setTag(value: any, init?: boolean) {
+    private isDefaultColor() {
+        const oldValue = this.tag?.background;
+        return !oldValue ||
+            oldValue === this.oldDefaultBg ||
+            oldValue === this.getBackgroundColor();
+    }
+
+    private async setTag(value: any) {
         const newValue = value || {};
+        let newBg = '';
         for (let prop in newValue) {
             if (newValue.hasOwnProperty(prop)) {
                 if (prop === 'width' || prop === 'height') {
                     this.tag[prop] = typeof newValue[prop] === 'string' ? newValue[prop] : `${newValue[prop]}px`;
                 } else if (prop === 'background') {
-                    let parentBg = '';
-                    if (this._rootParent) {
-                        const rowStyles = window.getComputedStyle(this._rootParent, null);
-                        parentBg = this._rootParent.background.color || rowStyles?.backgroundColor;
-                    }
-                    const canNotSetBg = this.bgString && init;
-                    const hasParentBg = parentBg && !this.bgString && init;
-                    this.tag[prop] = canNotSetBg ? this.tag[prop] : (hasParentBg ? parentBg : newValue[prop]);
+                    const oldValue = this.tag[prop];
+                    this.tag[prop] = newBg = this.isDefaultColor() ? newValue[prop] || this.getBackgroundColor() : oldValue;
                 }
                 else this.tag[prop] = newValue[prop];
             }
         }
         this.height = this.tag?.height || 'auto';
-        this.pnlMarkdownEditor.style.textAlign = this.tag?.textAlign || "left";
-        this.updateMarkdown(this.tag);
+        this.updateMarkdown({...this.tag, background: newBg});
     }
 
     getConfigurators() {
