@@ -76,8 +76,8 @@ define("@scom/scom-markdown-editor/API.ts", ["require", "exports", "@scom/scom-m
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.fetchAIGeneratedText = void 0;
     async function fetchAIGeneratedText(prompt) {
-        const APIUrl = store_1.getAIAPIUrl();
-        const APIKey = store_1.getAIAPIKey();
+        const APIUrl = (0, store_1.getAIAPIUrl)();
+        const APIKey = (0, store_1.getAIAPIKey)();
         const response = await fetch(APIUrl, {
             method: 'POST',
             headers: {
@@ -256,7 +256,7 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
                 return;
             this.toggleStopBtn(true);
             try {
-                const result = await API_1.fetchAIGeneratedText(this.inputAIPrompt.value);
+                const result = await (0, API_1.fetchAIGeneratedText)(this.inputAIPrompt.value);
                 if (!this.isStopped)
                     await this.readAllChunks(result);
             }
@@ -323,7 +323,7 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
     };
     Config = __decorate([
         components_3.customModule,
-        components_3.customElements('i-scom-markdown-editor-config')
+        (0, components_3.customElements)('i-scom-markdown-editor-config')
     ], Config);
     exports.default = Config;
 });
@@ -341,7 +341,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             this._theme = 'light';
             this.bgString = '';
             if (data_json_1.default)
-                store_2.setDataFromSCConfig(data_json_1.default);
+                (0, store_2.setDataFromSCConfig)(data_json_1.default);
         }
         static async create(options, parent) {
             let self = new this(parent, options);
@@ -462,16 +462,13 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                     visible: () => themeSchema != null && themeSchema != undefined,
                     command: (builder, userInputData) => {
                         let oldTag = {};
-                        let oldBgStr = '';
                         return {
                             execute: async () => {
                                 if (!userInputData)
                                     return;
                                 oldTag = Object.assign({}, this.tag);
-                                oldBgStr = this.bgString;
-                                if (userInputData.hasOwnProperty('background')) {
+                                if (userInputData.hasOwnProperty('background'))
                                     this.bgString = userInputData.background;
-                                }
                                 if (builder)
                                     builder.setTag(userInputData);
                                 else
@@ -607,7 +604,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
     };
     ScomMarkdownEditor = __decorate([
         components_4.customModule,
-        components_4.customElements('i-scom-markdown-editor')
+        (0, components_4.customElements)('i-scom-markdown-editor')
     ], ScomMarkdownEditor);
     exports.default = ScomMarkdownEditor;
 });
