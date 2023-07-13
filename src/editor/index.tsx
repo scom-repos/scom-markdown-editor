@@ -159,16 +159,9 @@ export default class Config extends Module {
     return (
       <i-panel
         id="wrapPnl"
-        padding={{ left: '1rem', right: '1rem', top: '1rem', bottom: '2rem' }}
       >
         <i-panel
           id={'pnlEditor'}
-          padding={{
-            top: '0.5rem',
-            bottom: '0.5rem',
-            left: '1rem',
-            right: '1rem',
-          }}
         >
           <i-markdown-editor
             id="mdEditor"

@@ -281,13 +281,8 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
             this.renderEditor();
         }
         render() {
-            return (this.$render("i-panel", { id: "wrapPnl", padding: { left: '1rem', right: '1rem', top: '1rem', bottom: '2rem' } },
-                this.$render("i-panel", { id: 'pnlEditor', padding: {
-                        top: '0.5rem',
-                        bottom: '0.5rem',
-                        left: '1rem',
-                        right: '1rem',
-                    } },
+            return (this.$render("i-panel", { id: "wrapPnl" },
+                this.$render("i-panel", { id: 'pnlEditor' },
                     this.$render("i-markdown-editor", { id: "mdEditor", width: '100%', height: 'auto', mode: 'wysiwyg' })),
                 this.$render("i-hstack", { id: 'pnlAIPrompt', visible: false, width: '100%', horizontalAlignment: 'space-between', verticalAlignment: 'center', padding: {
                         top: '0.5rem',
@@ -443,13 +438,22 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                             });
                             config.background = { color: this.getBackgroundColor() }; // bg for editor parent
                             config.setTag(Object.assign({}, this.tag));
-                            const button = new components_4.Button(null, {
+                            const pnlButton = new components_4.HStack(undefined, {
+                                justifyContent: 'end',
+                                alignItems: 'center',
+                                gap: 5,
+                                padding: {
+                                    top: 10,
+                                    bottom: 10
+                                }
+                            });
+                            const button = new components_4.Button(pnlButton, {
                                 caption: 'Confirm',
                                 background: { color: Theme.colors.primary.main },
                                 font: { color: Theme.colors.primary.contrastText }
                             });
                             vstack.append(config);
-                            vstack.append(button);
+                            vstack.append(pnlButton);
                             button.onClick = async () => {
                                 const content = config.content;
                                 if (onConfirm)
