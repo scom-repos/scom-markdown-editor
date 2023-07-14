@@ -10,7 +10,8 @@ import {
     customElements,
     ControlElement,
     IDataSchema,
-    Control
+    Control,
+    HStack
 } from '@ijstech/components';
 import './index.css';
 import { setDataFromSCConfig } from './store';
@@ -174,13 +175,22 @@ export default class ScomMarkdownEditor extends Module {
                         });
                         config.background = {color: this.getBackgroundColor()}; // bg for editor parent
                         config.setTag({...this.tag});
-                        const button = new Button(null, {
+                        const pnlButton = new HStack(undefined, {
+                            justifyContent: 'end',
+                            alignItems: 'center',
+                            gap: 5,
+                            padding: {
+                                top: 10,
+                                bottom: 10
+                            }
+                        });
+                        const button = new Button(pnlButton, {
                             caption: 'Confirm',
                             background: {color: Theme.colors.primary.main},
                             font: {color: Theme.colors.primary.contrastText}
                         });
                         vstack.append(config);
-                        vstack.append(button);
+                        vstack.append(pnlButton);
                         button.onClick = async () => {
                             const content = config.content;
                             if (onConfirm) onConfirm(true, {content});
