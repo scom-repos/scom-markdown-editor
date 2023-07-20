@@ -178,14 +178,11 @@ export default class ScomMarkdownEditor extends Module {
                         const pnlButton = new HStack(undefined, {
                             justifyContent: 'end',
                             alignItems: 'center',
-                            gap: 5,
-                            padding: {
-                                top: 10,
-                                bottom: 10
-                            }
+                            gap: 5
                         });
                         const button = new Button(pnlButton, {
                             caption: 'Confirm',
+                            height: 40,
                             background: {color: Theme.colors.primary.main},
                             font: {color: Theme.colors.primary.contrastText}
                         });

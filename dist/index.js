@@ -441,14 +441,11 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                             const pnlButton = new components_4.HStack(undefined, {
                                 justifyContent: 'end',
                                 alignItems: 'center',
-                                gap: 5,
-                                padding: {
-                                    top: 10,
-                                    bottom: 10
-                                }
+                                gap: 5
                             });
                             const button = new components_4.Button(pnlButton, {
                                 caption: 'Confirm',
+                                height: 40,
                                 background: { color: Theme.colors.primary.main },
                                 font: { color: Theme.colors.primary.contrastText }
                             });
