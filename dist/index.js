@@ -431,7 +431,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                     customUI: {
                         render: (data, onConfirm) => {
                             const vstack = new components_4.VStack(null, { gap: '1rem' });
-                            const pnlConfig = new components_4.Panel();
+                            const pnlConfig = new components_4.VStack();
                             const config = new index_1.default(pnlConfig, {
                                 content: this._data,
                                 theme: this.theme,

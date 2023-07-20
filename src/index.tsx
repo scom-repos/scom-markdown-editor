@@ -168,7 +168,7 @@ export default class ScomMarkdownEditor extends Module {
                 customUI: {
                     render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => {
                         const vstack = new VStack(null, { gap: '1rem' });
-                        const pnlConfig = new Panel();
+                        const pnlConfig = new VStack();
                         const config = new Config(pnlConfig, {
                             content: this._data,
                             theme: this.theme,
