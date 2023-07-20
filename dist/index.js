@@ -430,8 +430,9 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                     userInputDataSchema: {},
                     customUI: {
                         render: (data, onConfirm) => {
-                            const vstack = new components_4.VStack();
-                            const config = new index_1.default(null, {
+                            const vstack = new components_4.VStack(null, { gap: '1rem' });
+                            const pnlConfig = new components_4.Panel();
+                            const config = new index_1.default(pnlConfig, {
                                 content: this._data,
                                 theme: this.theme,
                                 margin: { bottom: '1rem' }
@@ -449,7 +450,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                                 background: { color: Theme.colors.primary.main },
                                 font: { color: Theme.colors.primary.contrastText }
                             });
-                            vstack.append(config);
+                            vstack.append(pnlConfig);
                             vstack.append(pnlButton);
                             button.onClick = async () => {
                                 const content = config.content;

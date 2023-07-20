@@ -167,8 +167,9 @@ export default class ScomMarkdownEditor extends Module {
                 userInputDataSchema: {},
                 customUI: {
                     render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => {
-                        const vstack = new VStack();
-                        const config = new Config(null, {
+                        const vstack = new VStack(null, { gap: '1rem' });
+                        const pnlConfig = new Panel();
+                        const config = new Config(pnlConfig, {
                             content: this._data,
                             theme: this.theme,
                             margin: {bottom: '1rem'}
@@ -186,7 +187,7 @@ export default class ScomMarkdownEditor extends Module {
                             background: {color: Theme.colors.primary.main},
                             font: {color: Theme.colors.primary.contrastText}
                         });
-                        vstack.append(config);
+                        vstack.append(pnlConfig);
                         vstack.append(pnlButton);
                         button.onClick = async () => {
                             const content = config.content;
