@@ -3,7 +3,7 @@ import {Styles} from '@ijstech/components';
 const Theme = Styles.Theme.ThemeVars;
 
 Styles.cssRule('i-scom-markdown-editor', {
-    overflow: 'hidden auto',
+    overflow: 'hidden',
     $nest: {
         'i-panel.container': {
             width: Theme.layout.container.width,

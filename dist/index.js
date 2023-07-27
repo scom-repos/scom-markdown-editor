@@ -9,7 +9,7 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_1.Styles.Theme.ThemeVars;
     components_1.Styles.cssRule('i-scom-markdown-editor', {
-        overflow: 'hidden auto',
+        overflow: 'hidden',
         $nest: {
             'i-panel.container': {
                 width: Theme.layout.container.width,
