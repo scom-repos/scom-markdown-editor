@@ -144,15 +144,6 @@ define("@scom/scom-markdown-editor/editor/index.css.ts", ["require", "exports", 
                 flexWrap: 'wrap',
                 height: 'auto'
             },
-            '.toastui-editor-mode-switch': {
-                background: 'transparent'
-            },
-            '#mdEditor .toastui-editor-md-container': {
-                backgroundColor: 'var(--bg-container, transparent)'
-            },
-            '#mdEditor .toastui-editor-ww-container': {
-                backgroundColor: 'var(--bg-container, transparent)'
-            }
         }
     });
 });
