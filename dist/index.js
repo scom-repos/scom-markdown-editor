@@ -535,7 +535,6 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             return this.tag;
         }
         async setTag(value) {
-            var _a;
             const newValue = value || {};
             for (let prop in newValue) {
                 if (newValue.hasOwnProperty(prop)) {
@@ -549,7 +548,8 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                         this.tag[prop] = newValue[prop];
                 }
             }
-            this.height = ((_a = this.tag) === null || _a === void 0 ? void 0 : _a.height) || 'auto';
+            // this.height = this.tag?.height || 'auto';
+            this.height = 'auto';
             this.updateMarkdown(Object.assign({}, this.tag));
         }
         getConfigurators() {
