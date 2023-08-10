@@ -279,7 +279,8 @@ export default class ScomMarkdownEditor extends Module {
                 else this.tag[prop] = newValue[prop];
             }
         }
-        this.height = this.tag?.height || 'auto';
+        // this.height = this.tag?.height || 'auto';
+        this.height = 'auto'
         this.updateMarkdown({...this.tag});
     }
 
