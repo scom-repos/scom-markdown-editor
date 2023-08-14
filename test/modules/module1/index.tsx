@@ -16,7 +16,6 @@ export default class Module1 extends Module {
            width: 1170,
            height: 200,
            data: '<h3>New text</h3>',
-           editMode: true,
            theme: "dark"
         });
         this.mainStack.appendChild(this.editor);
@@ -27,8 +26,8 @@ export default class Module1 extends Module {
             <i-vstack id="mainStack" margin={{top: '1rem', left: '1rem'}} gap="2rem">
                 <i-scom-markdown-editor
                     width={1180}
-                    editMode={true}
                     theme="light"
+                    inline={true}
                 ></i-scom-markdown-editor>
             </i-vstack>
         )

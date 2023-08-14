@@ -13,7 +13,7 @@
     "baseUrl": ".",
     "paths": {
       "@ijstech/components": ["node_modules/@ijstech/components"],
-      "@markdown-editor/*": ["src/*"],
+      "@scom-markdown-editor/*": ["src/*"],
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],

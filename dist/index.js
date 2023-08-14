@@ -28,6 +28,18 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
             },
             '.toastui-editor-mode-switch': {
                 background: 'transparent'
+            },
+            ".toastui-editor-contents ul:has(li input[type='checkbox'])": {
+                paddingLeft: 0,
+            },
+            ".toastui-editor-contents ul li:has(input[type='checkbox']):before": {
+                content: "none",
+            },
+            ".toastui-editor-md-container": {
+                backgroundColor: "transparent"
+            },
+            ".toastui-editor-ww-container": {
+                backgroundColor: "transparent"
             }
         }
     });
@@ -319,14 +331,42 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
     const Theme = components_4.Styles.Theme.ThemeVars;
     const lightTheme = components_4.Styles.Theme.defaultTheme;
     const darkTheme = components_4.Styles.Theme.darkTheme;
+    const LibPath = `libs/@scom/scom-markdown-editor/`;
+    const TOOLBAR_ITEMS_DEFAULT = [
+        ['heading', 'bold', 'italic', 'strike'],
+        ['hr', 'quote'],
+        ['ul', 'ol', 'task', 'indent', 'outdent'],
+        ['table', 'image', 'link'],
+        ['code', 'codeblock']
+    ];
+    const libPlugins = [
+        `${LibPath}lib/tui-editor/toastui-editor-all.min.js`,
+        `${LibPath}lib/tui-editor/toastui-editor-plugin-color-syntax.min.js`,
+        `${LibPath}lib/tui-editor/toastui-editor-plugin-code-syntax-highlight-all.min.js`,
+        `${LibPath}lib/tui-editor/toastui-editor-plugin-table-merged-cell.min.js`,
+        `${LibPath}lib/tui-editor/toastui-editor-plugin-uml.min.js`,
+    ];
+    const editorCSS = [
+        { name: 'toastui-editor', href: `${LibPath}lib/tui-editor/toastui-editor.min.css` },
+        { name: 'toastui-plugins', href: `${LibPath}lib/tui-editor/toastui-plugins.min.css` },
+    ];
     let ScomMarkdownEditor = class ScomMarkdownEditor extends components_4.Module {
         constructor(parent, options) {
             super(parent, options);
             this.tag = {};
             this.defaultEdit = true;
+            this.editorPlugins = [];
             this._theme = 'light';
+            this._inline = false;
+            this.selectionTimer = null;
+            this.commandHistory = null;
+            this.selectionPos = {
+                start: null,
+                end: null
+            };
             if (data_json_1.default)
                 (0, store_2.setDataFromSCConfig)(data_json_1.default);
+            this.onSelectionHandler = this.onSelectionHandler.bind(this);
         }
         static async create(options, parent) {
             let self = new this(parent, options);
@@ -351,8 +391,35 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                 this.tag.background = this.getBackgroundColor();
                 this.pnlMarkdownEditor.background.color = this.tag.background;
             }
-            if (this.mdViewer)
-                this.mdViewer.theme = value;
+            if (this.mdViewer) {
+                if (this.theme === 'light')
+                    this.mdViewer.classList.remove('toastui-editor-dark');
+                else
+                    this.mdViewer.classList.add('toastui-editor-dark');
+            }
+            if (this.mdEditor) {
+                if (this.theme === 'light')
+                    this.mdEditor.classList.remove('toastui-editor-dark');
+                else
+                    this.mdEditor.classList.add('toastui-editor-dark');
+            }
+        }
+        get inline() {
+            var _a;
+            return (_a = this._inline) !== null && _a !== void 0 ? _a : false;
+        }
+        set inline(value) {
+            this._inline = value;
+            if (this.inline && !this.mdEditor) {
+                this.renderEditor();
+            }
+            this.pnlEditorWrap.visible = this.inline;
+            if (this.inline) {
+                this.classList.add('is-inline');
+            }
+            else {
+                this.classList.remove('is-inline');
+            }
         }
         setRootParent(parent) {
             this._rootParent = parent;
@@ -370,6 +437,96 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
         getDefaultThemeColor() {
             const bgByTheme = this.theme === 'light' ? lightTheme.background.main : darkTheme.background.main;
             return bgByTheme;
+        }
+        async initPlugins() {
+            try {
+                for (const item of editorCSS) {
+                    this.addCSS(item.href, item.name);
+                }
+                await this.loadPlugins();
+            }
+            catch (_a) { }
+        }
+        addCSS(href, name) {
+            const css = document.head.querySelector(`[name="${name}"]`);
+            if (css)
+                return;
+            let link = document.createElement('link');
+            link.setAttribute('type', 'text/css');
+            link.setAttribute('rel', 'stylesheet');
+            link.setAttribute('name', name);
+            link.href = href;
+            document.head.append(link);
+        }
+        renderEditor(init) {
+            const editorPlugins = [...this.editorPlugins].filter(Boolean);
+            this.pnlEditor.clearInnerHTML();
+            const currentValue = this.data;
+            this.mdEditor = new this.editor({
+                el: this.pnlEditor,
+                previewStyle: 'vertical',
+                height: 'auto',
+                viewer: true,
+                initialEditType: 'wysiwyg',
+                initialValue: currentValue,
+                theme: this.theme,
+                toolbarItems: TOOLBAR_ITEMS_DEFAULT,
+                plugins: [...editorPlugins]
+            });
+            this.pnlEditor.visible = false;
+            this.mdEditor.on('focus', () => {
+                this.classList.add('is-focused');
+            });
+            this.mdEditor.on('blur', () => {
+                this.classList.remove('is-focused');
+            });
+        }
+        renderViewer() {
+            if (this.mdViewer)
+                return;
+            const editorPlugins = [...this.editorPlugins].filter(Boolean);
+            this.pnlViewer.clearInnerHTML();
+            this.mdViewer = new this.editor.factory({
+                el: this.pnlViewer,
+                height: 'auto',
+                viewer: true,
+                initialValue: this.data,
+                theme: this.theme,
+                plugins: [...editorPlugins],
+            });
+        }
+        async loadPlugin(plugin) {
+            return new Promise((resolve, reject) => {
+                components_4.RequireJS.require(plugin, async (editor, colorSyntax, codeSyntaxHighlight, tableMergedCell, uml) => {
+                    this.editor = editor;
+                    resolve([colorSyntax, codeSyntaxHighlight, tableMergedCell, uml]);
+                });
+            });
+        }
+        async loadPlugins() {
+            this.editorPlugins = await this.loadPlugin(libPlugins);
+        }
+        onToggleEditor(value) {
+            var _a, _b;
+            if (!this.inline)
+                return;
+            if (value) {
+                this.pnlEditorWrap.visible = true;
+                this.pnlViewerWrap.visible = false;
+                this.pnlEditor.visible = true;
+                const newVal = ((_a = this.mdEditor) === null || _a === void 0 ? void 0 : _a.getMarkdown()) || this.data;
+                this.mdEditor.setMarkdown(newVal);
+            }
+            else {
+                this.pnlEditorWrap.visible = false;
+                this.pnlViewerWrap.visible = true;
+                this.pnlEditor.visible = false;
+                const newVal = ((_b = this.mdEditor) === null || _b === void 0 ? void 0 : _b.getMarkdown()) || this.data;
+                this.mdViewer.setMarkdown(newVal);
+                this.toggleEmpty(!newVal);
+                if (newVal !== this.data)
+                    this.onConfirm();
+            }
         }
         async init() {
             super.init();
@@ -391,7 +548,60 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                     this.theme = themeAttr;
                     this.setTag(Object.assign(Object.assign({}, this.tag), { settingColor: '', background }));
                 }
-                this.data = this.getAttribute('data', true, '');
+                await this.initPlugins();
+                this.renderViewer();
+                const data = this.getAttribute('data', true);
+                if (data)
+                    this.data = data;
+                this.inline = this.getAttribute('inline', true, false);
+            }
+            this.setAttribute('draggable', 'false');
+            document.addEventListener("selectionchange", this.onSelectionHandler);
+        }
+        onSelectionHandler(event) {
+            var _a, _b, _c;
+            event.preventDefault();
+            event.stopPropagation();
+            const selection = document.getSelection();
+            const range = selection.rangeCount && selection.getRangeAt(0);
+            if (!range)
+                return;
+            const nearestContainer = range.commonAncestorContainer.TEXT_NODE ? range.commonAncestorContainer.parentElement : range.commonAncestorContainer;
+            const parentEditor = (_a = nearestContainer.parentElement) === null || _a === void 0 ? void 0 : _a.closest('#pnlEditorWrap');
+            const editor = (_b = nearestContainer.parentElement) === null || _b === void 0 ? void 0 : _b.closest('i-scom-markdown-editor');
+            const isDragging = (_c = parentEditor === null || parentEditor === void 0 ? void 0 : parentEditor.closest('ide-toolbar')) === null || _c === void 0 ? void 0 : _c.classList.contains('to-be-dropped');
+            if (!selection.toString() && !editor) {
+                this.resetEditors();
+                return;
+            }
+            if (parentEditor || isDragging)
+                return;
+            if (this.selectionTimer)
+                clearTimeout(this.selectionTimer);
+            this.selectionTimer = setTimeout(() => {
+                var _a, _b;
+                const selection = document.getSelection();
+                const selectionText = selection.toString();
+                this.resetEditors();
+                if (selection && selection.rangeCount) {
+                    const range = selection.getRangeAt(0);
+                    const nearestContainer = range.commonAncestorContainer;
+                    if (nearestContainer.TEXT_NODE) {
+                        const parentEditor = (_a = nearestContainer.parentElement) === null || _a === void 0 ? void 0 : _a.closest('i-scom-markdown-editor');
+                        const isDragging = (_b = parentEditor === null || parentEditor === void 0 ? void 0 : parentEditor.closest('ide-toolbar')) === null || _b === void 0 ? void 0 : _b.classList.contains('to-be-dropped');
+                        if (parentEditor && !isDragging) {
+                            parentEditor.onToggleEditor(true);
+                            const startIndex = this.data.indexOf(selectionText);
+                            this.mdEditor.setSelection(startIndex, selectionText.length);
+                        }
+                    }
+                }
+            }, 500);
+        }
+        resetEditors() {
+            const editors = document.querySelectorAll('i-scom-markdown-editor');
+            for (let editor of editors) {
+                editor.onToggleEditor(false);
             }
         }
         _getActions(themeSchema) {
@@ -399,6 +609,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                 {
                     name: 'Edit',
                     icon: 'edit',
+                    visible: () => !this.inline,
                     command: (builder, userInputData) => {
                         let _oldData = '';
                         return {
@@ -418,7 +629,6 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                             redo: () => { }
                         };
                     },
-                    userInputDataSchema: {},
                     customUI: {
                         render: (data, onConfirm) => {
                             const vstack = new components_4.VStack(null, { gap: '1rem' });
@@ -515,12 +725,14 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
         }
         toggleEmpty(value) {
             this.pnlEmpty.visible = value;
-            this.mdViewer.visible = !value;
+            this.pnlViewerWrap.visible = !value;
         }
         async setData(value) {
             this._data = value.content || '';
             this.toggleEmpty(!this._data);
-            this.mdViewer.value = this.data;
+            if (this.mdViewer) {
+                this.mdViewer.setMarkdown(this._data);
+            }
         }
         getTag() {
             return this.tag;
@@ -543,6 +755,34 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             this.height = 'auto';
             this.updateMarkdown(Object.assign({}, this.tag));
         }
+        getEditCommand(builder) {
+            let _oldData = '';
+            return {
+                execute: async () => {
+                    var _a;
+                    _oldData = this._data;
+                    const content = (_a = this.mdEditor) === null || _a === void 0 ? void 0 : _a.getMarkdown();
+                    await this.setData({ content });
+                    if (builder === null || builder === void 0 ? void 0 : builder.setData)
+                        builder.setData({ content });
+                },
+                undo: async () => {
+                    this._data = _oldData;
+                    await this.setData({ content: this._data });
+                    if (builder === null || builder === void 0 ? void 0 : builder.setData)
+                        builder.setData({ content: this._data });
+                },
+                redo: () => { }
+            };
+        }
+        setOnConfirm(commandHistory, builder) {
+            this.commandHistory = commandHistory;
+            this.builder = builder;
+        }
+        onConfirm() {
+            const editCommand = this.getEditCommand(this.builder);
+            this.commandHistory.execute(editCommand);
+        }
         getConfigurators() {
             return [
                 {
@@ -559,7 +799,8 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                     },
                     getTag: this.getTag.bind(this),
                     setTag: this.setTag.bind(this),
-                    setRootParent: this.setRootParent.bind(this)
+                    setRootParent: this.setRootParent.bind(this),
+                    setOnConfirm: this.setOnConfirm.bind(this)
                 },
                 {
                     name: 'Emdedder Configurator',
@@ -592,11 +833,13 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             return themeSchema;
         }
         render() {
-            return (this.$render("i-vstack", { id: "pnlMarkdownEditor" },
-                this.$render("i-panel", { id: "pnlViewer", minHeight: 20 },
-                    this.$render("i-markdown-editor", { id: "mdViewer", viewer: true, value: this.data, width: '100%', height: 'auto', visible: false })),
-                this.$render("i-panel", { id: "pnlEmpty" },
-                    this.$render("i-label", { caption: "Click to edit text", opacity: 0.5, font: { color: '#222' }, padding: { top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' } }))));
+            return (this.$render("i-vstack", { id: "pnlMarkdownEditor", minHeight: 50 },
+                this.$render("i-panel", { id: "pnlEditorWrap", visible: false },
+                    this.$render("i-panel", { id: "pnlEditor" })),
+                this.$render("i-vstack", { id: "pnlViewerWrap", width: "100%" },
+                    this.$render("i-panel", { id: "pnlViewer" }),
+                    this.$render("i-panel", { id: "pnlEmpty" },
+                        this.$render("i-label", { caption: "Click to edit text", opacity: 0.5, font: { color: '#222' }, padding: { top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' } })))));
         }
     };
     ScomMarkdownEditor = __decorate([
