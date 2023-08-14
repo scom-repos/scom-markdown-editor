@@ -22,6 +22,28 @@ Styles.cssRule('i-scom-markdown-editor', {
         },
         '.toastui-editor-mode-switch': {
             background: 'transparent'
+        },
+        ".toastui-editor-contents ul:has(li input[type='checkbox'])": {
+            paddingLeft: 0,
+        },
+        ".toastui-editor-contents ul li:has(input[type='checkbox']):before": {
+            content: "none",
+        },
+        ".toastui-editor-md-container": {
+            backgroundColor: "transparent"
+        },
+        ".toastui-editor-ww-container": {
+            backgroundColor: "transparent"
+        },
+        '#pnlEditorWrap': {
+            $nest: {
+                '.toastui-editor-defaultUI-toolbar': {
+                    display: 'none'
+                },
+                '.toastui-editor-toolbar': {
+                    display: 'none'
+                }
+            }
         }
     }
 });
