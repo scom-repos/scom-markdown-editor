@@ -147,8 +147,12 @@ export default class ScomMarkdownEditor extends Module {
         this.pnlEditorWrap.visible = this.inline;
         if (this.inline) {
             this.classList.add('is-inline');
+            this.pnlViewer.addEventListener("selectstart", () => {
+                document.addEventListener("selectionchange", this.onSelectionHandler);
+            })
         } else {
             this.classList.remove('is-inline');
+            document.removeEventListener("selectionchange", this.onSelectionHandler);
         }
     }
 
@@ -301,14 +305,23 @@ export default class ScomMarkdownEditor extends Module {
             this.inline = this.getAttribute('inline', true, false);
         }
         this.setAttribute('draggable', 'false');
-        document.addEventListener("selectionchange", this.onSelectionHandler);
+        document.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            const target = event.target as Control;
+            const editor = target.closest('i-scom-markdown-editor');
+            if (!editor) {
+                this.resetEditors();
+            }
+        })
     }
 
     private onSelectionHandler(event: Event) {
         event.preventDefault();
         event.stopPropagation();
+        if (!this.inline) return;
         const selection = document.getSelection();
-        const range = selection.rangeCount && selection.getRangeAt(0);
+        const range = selection.rangeCount > 0 && selection.getRangeAt(0);
         if (!range) return;
         const nearestContainer = range.commonAncestorContainer.TEXT_NODE ? range.commonAncestorContainer.parentElement : range.commonAncestorContainer;
         const parentEditor = nearestContainer.parentElement?.closest('#pnlEditorWrap');
@@ -325,7 +338,7 @@ export default class ScomMarkdownEditor extends Module {
             const selection = document.getSelection();
             const selectionText = selection.toString();
             this.resetEditors();
-            if (selection && selection.rangeCount) {
+            if (selection && selection.rangeCount > 0) {
                 const range = selection.getRangeAt(0);
                 const nearestContainer = range.commonAncestorContainer;
                 if (nearestContainer.TEXT_NODE) {

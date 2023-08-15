@@ -416,9 +416,13 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             this.pnlEditorWrap.visible = this.inline;
             if (this.inline) {
                 this.classList.add('is-inline');
+                this.pnlViewer.addEventListener("selectstart", () => {
+                    document.addEventListener("selectionchange", this.onSelectionHandler);
+                });
             }
             else {
                 this.classList.remove('is-inline');
+                document.removeEventListener("selectionchange", this.onSelectionHandler);
             }
         }
         setRootParent(parent) {
@@ -556,14 +560,24 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                 this.inline = this.getAttribute('inline', true, false);
             }
             this.setAttribute('draggable', 'false');
-            document.addEventListener("selectionchange", this.onSelectionHandler);
+            document.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                const target = event.target;
+                const editor = target.closest('i-scom-markdown-editor');
+                if (!editor) {
+                    this.resetEditors();
+                }
+            });
         }
         onSelectionHandler(event) {
             var _a, _b, _c;
             event.preventDefault();
             event.stopPropagation();
+            if (!this.inline)
+                return;
             const selection = document.getSelection();
-            const range = selection.rangeCount && selection.getRangeAt(0);
+            const range = selection.rangeCount > 0 && selection.getRangeAt(0);
             if (!range)
                 return;
             const nearestContainer = range.commonAncestorContainer.TEXT_NODE ? range.commonAncestorContainer.parentElement : range.commonAncestorContainer;
@@ -583,7 +597,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                 const selection = document.getSelection();
                 const selectionText = selection.toString();
                 this.resetEditors();
-                if (selection && selection.rangeCount) {
+                if (selection && selection.rangeCount > 0) {
                     const range = selection.getRangeAt(0);
                     const nearestContainer = range.commonAncestorContainer;
                     if (nearestContainer.TEXT_NODE) {
