@@ -82,7 +82,6 @@ declare module "@scom/scom-markdown-editor" {
     interface ScomMarkdownElement extends ControlElement {
         lazyLoad?: boolean;
         data?: string;
-        editMode?: boolean;
         theme?: ThemeType;
     }
     global {
@@ -95,15 +94,16 @@ declare module "@scom/scom-markdown-editor" {
     export default class ScomMarkdownEditor extends Module {
         private pnlMarkdownEditor;
         private pnlEmpty;
+        private _rootParent;
         private mdViewer;
+        private mdEditor;
         tag: any;
         defaultEdit: boolean;
         private _data;
         private _theme;
-        private _rootParent;
-        readonly onEdit: () => Promise<void>;
-        readonly onConfirm: () => Promise<void>;
-        readonly onDiscard: () => Promise<void>;
+        private selectionTimer;
+        private commandHistory;
+        private builder;
         constructor(parent?: Container, options?: any);
         static create(options?: ScomMarkdownElement, parent?: Container): Promise<ScomMarkdownEditor>;
         get data(): string;
@@ -113,7 +113,10 @@ declare module "@scom/scom-markdown-editor" {
         private setRootParent;
         private getBackgroundColor;
         private getDefaultThemeColor;
+        private onToggleEditor;
         init(): Promise<void>;
+        private onSelectionHandler;
+        private resetEditors;
         private _getActions;
         private updateMarkdown;
         private getData;
@@ -121,6 +124,9 @@ declare module "@scom/scom-markdown-editor" {
         private setData;
         private getTag;
         private setTag;
+        private getEditCommand;
+        private setOnConfirm;
+        private onConfirm;
         getConfigurators(): ({
             name: string;
             target: string;
@@ -132,11 +138,11 @@ declare module "@scom/scom-markdown-editor" {
                     undo: () => Promise<void>;
                     redo: () => void;
                 };
-                userInputDataSchema: {};
                 customUI: {
                     render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => VStack;
                 };
                 visible?: undefined;
+                userInputDataSchema?: undefined;
             } | {
                 name: string;
                 icon: string;
@@ -154,6 +160,7 @@ declare module "@scom/scom-markdown-editor" {
             getTag: any;
             setTag: any;
             setRootParent: any;
+            setOnConfirm: any;
         } | {
             name: string;
             target: string;
@@ -163,6 +170,7 @@ declare module "@scom/scom-markdown-editor" {
             setTag: any;
             getActions?: undefined;
             setRootParent?: undefined;
+            setOnConfirm?: undefined;
         })[];
         private getThemeSchema;
         render(): any;
