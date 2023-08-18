@@ -41,5 +41,17 @@ Styles.cssRule('i-scom-markdown-editor-config', {
       flexWrap: 'wrap',
       height: 'auto'
     },
+    '.toastui-editor-contents p': {
+      color: Theme.text.primary
+    },
+    '.toastui-editor-mode-switch': {
+      background: 'transparent'
+    },
+    '#mdEditor .toastui-editor-md-container': {
+      backgroundColor: 'var(--bg-container, transparent)'
+    },
+    '#mdEditor .toastui-editor-ww-container': {
+      backgroundColor: 'var(--bg-container, transparent)'
+    }
   }
 });

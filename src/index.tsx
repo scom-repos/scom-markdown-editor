@@ -11,7 +11,8 @@ import {
     IDataSchema,
     Control,
     HStack,
-    MarkdownEditor
+    MarkdownEditor,
+    Modal
 } from '@ijstech/components';
 import './index.css';
 import { setDataFromSCConfig } from './store';
@@ -25,14 +26,13 @@ const darkTheme = Styles.Theme.darkTheme;
 export interface IConfigData {
     width?: string;
     height?: string;
-    background?: string;
+    backgroundColor?: string;
 }
 
 type ThemeType = 'dark' | 'light'
 interface ScomMarkdownElement extends ControlElement {
     lazyLoad?: boolean;
     data?: string;
-    // inline?: boolean;
     theme?: ThemeType
 }
 
@@ -58,7 +58,6 @@ export default class ScomMarkdownEditor extends Module {
 
     private _data: string;
     private _theme: ThemeType = 'light';
-    // private _inline: boolean = true;
     private selectionTimer: any = null;
     private commandHistory: any = null;
     private builder: any;
@@ -67,6 +66,7 @@ export default class ScomMarkdownEditor extends Module {
         super(parent, options);
         if (scconfig) setDataFromSCConfig(scconfig);
         this.onSelectionHandler = this.onSelectionHandler.bind(this);
+        this.onBlurHandler = this.onBlurHandler.bind(this);
     }
 
     static async create(options?: ScomMarkdownElement, parent?: Container) {
@@ -88,58 +88,52 @@ export default class ScomMarkdownEditor extends Module {
     }
     set theme(value: ThemeType) {
         this._theme = value ?? 'light';
-        if (this.pnlMarkdownEditor && !this.tag?.settingColor) {
-            this.tag.background = this.getBackgroundColor();
-            this.pnlMarkdownEditor.background.color = this.tag.background;
+        if (this.pnlMarkdownEditor && !this.tag?.settingBgColor) {
+            this.tag.backgroundColor = this.getBackgroundColor();
+            this.pnlMarkdownEditor.background.color = this.tag.backgroundColor;
         }
+        this.tag.textColor = this.getTextColor();
+        this.updateColor(this.tag.textColor);
         if (this.mdViewer) this.mdViewer.theme = this.theme;
         if (this.mdEditor) this.mdEditor.theme = this.theme;
     }
 
-    // get inline() {
-    //     return this._inline ?? true;
-    // }
-    // set inline(value: boolean) {
-    //     this._inline = value ?? true;
-    //     if (this.inline) {
-    //         this.classList.add('is-inline');
-    //         this.mdViewer.addEventListener("selectstart", () => {
-    //             document.addEventListener("selectionchange", this.onSelectionHandler);
-    //         })
-    //     } else {
-    //         this.classList.remove('is-inline');
-    //         document.removeEventListener("selectionchange", this.onSelectionHandler);
-    //     }
-    // }
-
     private setRootParent(parent: Control) {
         this._rootParent = parent;
-        const newTag = {...this.tag, background: this.getBackgroundColor()};
+        const newTag = {...this.tag, backgroundColor: this.getBackgroundColor()};
         this.setTag(newTag);
     }
 
     private getBackgroundColor() {
-        let background = '';
+        let backgroundColor = '';
+        if (this._rootParent) {
+            // const rowStyles = window.getComputedStyle(this._rootParent, null);
+            backgroundColor = this._rootParent.background.color // || rowStyles?.backgroundColor;
+        }
+        return backgroundColor || this.getDefaultThemeColor();
+    }
+
+    private getTextColor() {
+        let textColor = '';
         if (this._rootParent) {
             const rowStyles = window.getComputedStyle(this._rootParent, null);
-            background = this._rootParent.background.color || rowStyles?.backgroundColor;
+            textColor = this._rootParent.font.color || rowStyles?.color;
         }
-        return background || this.getDefaultThemeColor();
+        return textColor || this.getDefaultTextColor();
     }
 
     private getDefaultThemeColor() {
-        const bgByTheme = this.theme === 'light' ? lightTheme.background.main : darkTheme.background.main;
-        return bgByTheme;
+        return this.theme === 'light' ? lightTheme.background.main : darkTheme.background.main;
+    }
+
+    private getDefaultTextColor() {
+        return this.theme === 'light' ? lightTheme.text.primary : darkTheme.text.primary;
     }
 
     private onToggleEditor(value: boolean) {
-        // if (!this.inline) return;
-        if (value) {
-            this.mdEditor.visible = true;
-            this.mdViewer.visible = false;
-        } else {
-            this.mdEditor.visible = false;
-            this.mdViewer.visible = true;
+        this.mdEditor.visible = value;
+        this.mdViewer.visible = !value;
+        if (!value) {
             const newVal = this.mdEditor?.getMarkdownValue() || this._data;
             this.mdViewer.value = newVal;
             this.toggleEmpty(!newVal);
@@ -151,8 +145,9 @@ export default class ScomMarkdownEditor extends Module {
         super.init();
         const width = this.getAttribute('width', true);
         const height = this.getAttribute('height', true);
-        const background = this.getBackgroundColor();
-        const initTag: any = { background, textAlign: 'left', settingColor: '' };
+        const backgroundColor = this.getBackgroundColor();
+        const textColor = this.getTextColor();
+        const initTag: any = { backgroundColor, textColor, textAlign: 'left', settingBgColor: '' };
         if (width || height) {
             const finalWidth = width ? (typeof this.width === 'string' ? width : `${width}px`) : '100%';
             const finalHeight = height ? (typeof this.height === 'string' ? height : `${height}px`) : 'auto';
@@ -167,36 +162,35 @@ export default class ScomMarkdownEditor extends Module {
                 this.theme = themeAttr;
                 this.setTag({
                     ...this.tag,
-                    settingColor: '',
-                    background
+                    settingBgColor: '',
+                    backgroundColor,
+                    textColor
                 });
             }
-            // this.inline = this.getAttribute('inline', true, true);
             const data = this.getAttribute('data', true);
             if (data) this.data = data;
         }
+        const builder = this.closest('i-scom-page-builder');
         this.setAttribute('draggable', 'false');
-        console.log(this.mdEditor.getEditorElm())
-        document.addEventListener('click', (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            const target = event.target as Control;
-            const editor = target.closest('i-scom-markdown-editor');
-            if (!editor) {
-                this.resetEditors();
-            }
-        })
-        document.addEventListener("selectionchange", this.onSelectionHandler);
+        this.setAttribute('contenteditable', builder ? 'true' : 'false');
+        this.addEventListener('blur', this.onBlurHandler);
+        document.addEventListener('selectionchange', this.onSelectionHandler);
+    }
+
+    onHide(): void {
+        this.removeEventListener('blur', this.onBlurHandler);
+        document.removeEventListener('selectionchange', this.onSelectionHandler);
     }
 
     private onSelectionHandler(event: Event) {
         event.preventDefault();
         event.stopPropagation();
-        // if (!this.inline) return;
         const selection = document.getSelection();
         const range = selection.rangeCount > 0 && selection.getRangeAt(0);
         if (!range) return;
         const nearestContainer = range.commonAncestorContainer.TEXT_NODE ? range.commonAncestorContainer.parentElement : range.commonAncestorContainer;
+        const parentBuilder = nearestContainer.parentElement?.closest('i-scom-page-builder')
+        if (!parentBuilder) return;
         const parentEditor = nearestContainer.parentElement?.closest('#mdEditor');
         const editor = nearestContainer.parentElement?.closest('i-scom-markdown-editor');
         const isDragging = parentEditor?.closest('ide-toolbar')?.classList.contains('to-be-dropped');
@@ -233,6 +227,10 @@ export default class ScomMarkdownEditor extends Module {
                 }
             }
         }, 500)
+    }
+
+    private onBlurHandler(event: Event) {
+        this.onToggleEditor(false)
     }
 
     private resetEditors() {
@@ -306,9 +304,9 @@ export default class ScomMarkdownEditor extends Module {
                         execute: async () => {
                             if (!userInputData) return;
                             oldTag = JSON.parse(JSON.stringify(this.tag));
-                            if (userInputData.background) {
-                                this.tag.background = userInputData.background;
-                                this.tag.settingColor = userInputData.background
+                            if (userInputData.backgroundColor) {
+                                this.tag.backgroundColor = userInputData.backgroundColor;
+                                this.tag.settingBgColor = userInputData.backgroundColor
                             }
                             if (userInputData.width)
                                 this.tag.width = userInputData.width;
@@ -336,15 +334,21 @@ export default class ScomMarkdownEditor extends Module {
 
     private updateMarkdown(config: any) {
         if (!config) return;
-        const { width, height, background, textAlign = 'left' } = config;
+        const { width, height, backgroundColor, textAlign = 'left', textColor } = config;
+        this.updateColor(textColor);
         if (this.pnlMarkdownEditor) {
-            this.pnlMarkdownEditor.background.color = background;
+            this.pnlMarkdownEditor.background.color = backgroundColor;
             this.pnlMarkdownEditor.style.textAlign = textAlign;
         }
         if (this.mdViewer) {
             if (width) this.mdViewer.width = width;
             if (height) this.mdViewer.height = height;
         }
+    }
+
+    private updateColor(textColor: string) {
+        if (textColor) this.style.setProperty('--text-primary', textColor);
+        else this.style.removeProperty('--text-primary');
     }
 
     private getData() {
@@ -377,8 +381,11 @@ export default class ScomMarkdownEditor extends Module {
             if (newValue.hasOwnProperty(prop)) {
                 if (prop === 'width' || prop === 'height') {
                     this.tag[prop] = typeof newValue[prop] === 'string' ? newValue[prop] : `${newValue[prop]}px`;
-                } else if (prop === 'background') {
-                    this.tag.background = newValue?.settingColor || this.getBackgroundColor();
+                } else if (prop === 'backgroundColor') {
+                    this.tag.backgroundColor = newValue?.settingBgColor || this.getBackgroundColor();
+                } else if (prop === 'textColor') {
+                    const isNew = newValue?.textColor && newValue.textColor !== this.tag.textColor;
+                    this.tag.textColor = isNew ? newValue.textColor : this.getTextColor();
                 }
                 else this.tag[prop] = newValue[prop];
             }
@@ -458,7 +465,7 @@ export default class ScomMarkdownEditor extends Module {
                         'right'
                     ]
                 },
-                background: {
+                backgroundColor: {
                     type: 'string',
                     format: 'color'
                 }
