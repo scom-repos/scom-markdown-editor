@@ -66,16 +66,19 @@ export default class Config extends Module {
   }
 
   async setTag(value: any) {
-    const { background, textAlign } = value
-    this.tag = { background, textAlign }
+    const { backgroundColor, textColor, textAlign } = value
+    this.tag = { backgroundColor, textColor, textAlign }
     this.updateMardown()
   }
 
   private updateMardown() {
     if (this.wrapPnl) {
-      const { background, textAlign } = this.tag;
+      const { backgroundColor, textColor, textAlign } = this.tag;
       this.wrapPnl.style.textAlign = textAlign || "left";
-      this.wrapPnl.style.setProperty('--bg-container', background || '');
+      this.wrapPnl.style.setProperty('--bg-container', backgroundColor || '');
+      if (textColor)
+        this.wrapPnl.style.setProperty('--text-primary', textColor);
+      else this.wrapPnl.style.removeProperty('--text-primary');
     }
   }
 

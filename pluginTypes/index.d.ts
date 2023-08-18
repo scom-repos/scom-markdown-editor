@@ -76,7 +76,7 @@ declare module "@scom/scom-markdown-editor" {
     export interface IConfigData {
         width?: string;
         height?: string;
-        background?: string;
+        backgroundColor?: string;
     }
     type ThemeType = 'dark' | 'light';
     interface ScomMarkdownElement extends ControlElement {
@@ -112,13 +112,18 @@ declare module "@scom/scom-markdown-editor" {
         set theme(value: ThemeType);
         private setRootParent;
         private getBackgroundColor;
+        private getTextColor;
         private getDefaultThemeColor;
+        private getDefaultTextColor;
         private onToggleEditor;
         init(): Promise<void>;
+        onHide(): void;
         private onSelectionHandler;
+        private onClickHandler;
         private resetEditors;
         private _getActions;
         private updateMarkdown;
+        private updateColor;
         private getData;
         private toggleEmpty;
         private setData;
