@@ -27,12 +27,12 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
             //     flexWrap: 'wrap',
             //     height: 'auto'
             // },
-            ".toastui-editor-contents ul:has(li input[type='checkbox'])": {
-                paddingLeft: 0,
-            },
-            ".toastui-editor-contents ul li:has(input[type='checkbox']):before": {
-                content: "none",
-            },
+            // ".toastui-editor-contents ul:has(li input[type='checkbox'])": {
+            //     paddingLeft: 0,
+            // },
+            // ".toastui-editor-contents ul li:has(input[type='checkbox']):before": {
+            //     content: "none",
+            // },
             '.toastui-editor-contents p': {
                 color: Theme.text.primary
             },
@@ -481,8 +481,30 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             const builder = this.closest('i-scom-page-builder');
             this.setAttribute('draggable', 'false');
             this.setAttribute('contenteditable', builder ? 'true' : 'false');
-            this.addEventListener('blur', this.onBlurHandler);
-            document.addEventListener('selectionchange', this.onSelectionHandler);
+            if (builder) {
+                await this.renderEditor();
+                this.addEventListener('blur', this.onBlurHandler);
+                document.addEventListener('selectionchange', this.onSelectionHandler);
+            }
+            else {
+                this.onHide();
+            }
+        }
+        async renderEditor() {
+            this.pnlEditorWrap.clearInnerHTML();
+            this.mdEditor = await components_4.MarkdownEditor.create({
+                viewer: false,
+                value: this.data,
+                width: '100%',
+                height: 'auto',
+                mode: 'wysiwyg',
+                theme: this.theme,
+                hideModeSwitch: true,
+                toolbarItems: [],
+                visible: false
+            });
+            this.mdEditor.id = 'mdEditor';
+            this.pnlEditorWrap.appendChild(this.mdEditor);
         }
         onHide() {
             this.removeEventListener('blur', this.onBlurHandler);
@@ -661,7 +683,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                 if (width)
                     this.mdViewer.width = width;
                 if (height)
-                    this.mdViewer.height = height;
+                    this.mdViewer.height = 'auto'; // height;
             }
         }
         updateColor(textColor) {
@@ -791,13 +813,12 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             return themeSchema;
         }
         render() {
-            return (this.$render("i-vstack", { id: "pnlMarkdownEditor", minHeight: 50 },
-                this.$render("i-panel", { id: "pnlEditorWrap" },
-                    this.$render("i-markdown-editor", { id: "mdEditor", viewer: false, value: this.data, width: '100%', height: 'auto', mode: 'wysiwyg', theme: this.theme, hideModeSwitch: true, toolbarItems: [], visible: false })),
-                this.$render("i-vstack", { id: "pnlViewerWrap", width: "100%" },
-                    this.$render("i-markdown-editor", { id: "mdViewer", viewer: true, value: this.data, width: '100%', height: 'auto', visible: false }),
-                    this.$render("i-panel", { id: "pnlEmpty" },
-                        this.$render("i-label", { caption: "Click to edit text", opacity: 0.5, font: { color: '#222' }, padding: { top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' } })))));
+            return (this.$render("i-vstack", { id: "pnlMarkdownEditor" },
+                this.$render("i-panel", { minHeight: 20 },
+                    this.$render("i-markdown-editor", { id: "mdViewer", viewer: true, value: this.data, width: '100%', height: 'auto', visible: false })),
+                this.$render("i-panel", { id: "pnlEmpty" },
+                    this.$render("i-label", { caption: "Click to edit text", opacity: 0.5, font: { color: '#222' }, padding: { top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' } })),
+                this.$render("i-panel", { id: "pnlEditorWrap" })));
         }
     };
     ScomMarkdownEditor = __decorate([

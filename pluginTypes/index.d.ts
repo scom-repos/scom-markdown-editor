@@ -97,6 +97,7 @@ declare module "@scom/scom-markdown-editor" {
         private _rootParent;
         private mdViewer;
         private mdEditor;
+        private pnlEditorWrap;
         tag: any;
         defaultEdit: boolean;
         private _data;
@@ -117,6 +118,7 @@ declare module "@scom/scom-markdown-editor" {
         private getDefaultTextColor;
         private onToggleEditor;
         init(): Promise<void>;
+        private renderEditor;
         onHide(): void;
         private onSelectionHandler;
         private onBlurHandler;

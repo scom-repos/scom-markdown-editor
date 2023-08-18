@@ -11,8 +11,7 @@ import {
     IDataSchema,
     Control,
     HStack,
-    MarkdownEditor,
-    Modal
+    MarkdownEditor
 } from '@ijstech/components';
 import './index.css';
 import { setDataFromSCConfig } from './store';
@@ -52,6 +51,7 @@ export default class ScomMarkdownEditor extends Module {
     private _rootParent: Control;
     private mdViewer: MarkdownEditor;
     private mdEditor: MarkdownEditor;
+    private pnlEditorWrap: Panel;
 
     tag: any = {};
     defaultEdit: boolean = true;
@@ -173,8 +173,30 @@ export default class ScomMarkdownEditor extends Module {
         const builder = this.closest('i-scom-page-builder');
         this.setAttribute('draggable', 'false');
         this.setAttribute('contenteditable', builder ? 'true' : 'false');
-        this.addEventListener('blur', this.onBlurHandler);
-        document.addEventListener('selectionchange', this.onSelectionHandler);
+        if (builder) {
+            await this.renderEditor();
+            this.addEventListener('blur', this.onBlurHandler);
+            document.addEventListener('selectionchange', this.onSelectionHandler);
+        } else {
+            this.onHide();
+        }
+    }
+
+    private async renderEditor() {
+        this.pnlEditorWrap.clearInnerHTML();
+        this.mdEditor = await MarkdownEditor.create({
+            viewer: false,
+            value: this.data,
+            width: '100%',
+            height: 'auto',
+            mode: 'wysiwyg',
+            theme: this.theme,
+            hideModeSwitch: true,
+            toolbarItems: [],
+            visible: false
+        });
+        this.mdEditor.id = 'mdEditor';
+        this.pnlEditorWrap.appendChild(this.mdEditor);
     }
 
     onHide(): void {
@@ -342,7 +364,7 @@ export default class ScomMarkdownEditor extends Module {
         }
         if (this.mdViewer) {
             if (width) this.mdViewer.width = width;
-            if (height) this.mdViewer.height = height;
+            if (height) this.mdViewer.height = 'auto'; // height;
         }
     }
 
@@ -476,22 +498,8 @@ export default class ScomMarkdownEditor extends Module {
 
     render() {
         return (
-            <i-vstack id="pnlMarkdownEditor" minHeight={50}>
-                <i-panel id="pnlEditorWrap">
-                    <i-markdown-editor
-                        id="mdEditor"
-                        viewer={false}
-                        value = {this.data}
-                        width='100%'
-                        height='auto'
-                        mode='wysiwyg'
-                        theme={this.theme}
-                        hideModeSwitch={true}
-                        toolbarItems={[]}
-                        visible={false}
-                    ></i-markdown-editor>
-                </i-panel>
-                <i-vstack id="pnlViewerWrap" width="100%">
+            <i-vstack id="pnlMarkdownEditor">
+                <i-panel minHeight={20}>
                     <i-markdown-editor
                         id="mdViewer"
                         viewer={true}
@@ -500,15 +508,16 @@ export default class ScomMarkdownEditor extends Module {
                         height='auto'
                         visible={false}
                     ></i-markdown-editor>
-                    <i-panel id="pnlEmpty">
-                        <i-label
-                            caption="Click to edit text"
-                            opacity={0.5}
-                            font={{color: '#222'}}
-                            padding={{ top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' }}
-                        ></i-label>
-                    </i-panel>
-                </i-vstack>
+                </i-panel>
+                <i-panel id="pnlEmpty">
+                    <i-label
+                        caption="Click to edit text"
+                        opacity={0.5}
+                        font={{color: '#222'}}
+                        padding={{ top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' }}
+                    ></i-label>
+                </i-panel>
+                <i-panel id="pnlEditorWrap"></i-panel>
             </i-vstack>
         );
     }

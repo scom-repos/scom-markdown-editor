@@ -21,12 +21,12 @@ Styles.cssRule('i-scom-markdown-editor', {
         //     flexWrap: 'wrap',
         //     height: 'auto'
         // },
-        ".toastui-editor-contents ul:has(li input[type='checkbox'])": {
-            paddingLeft: 0,
-        },
-        ".toastui-editor-contents ul li:has(input[type='checkbox']):before": {
-            content: "none",
-        },
+        // ".toastui-editor-contents ul:has(li input[type='checkbox'])": {
+        //     paddingLeft: 0,
+        // },
+        // ".toastui-editor-contents ul li:has(input[type='checkbox']):before": {
+        //     content: "none",
+        // },
         '.toastui-editor-contents p': {
             color: Theme.text.primary
         },
