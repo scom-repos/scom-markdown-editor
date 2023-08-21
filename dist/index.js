@@ -814,8 +814,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
         }
         render() {
             return (this.$render("i-vstack", { id: "pnlMarkdownEditor" },
-                this.$render("i-panel", { minHeight: 20 },
-                    this.$render("i-markdown-editor", { id: "mdViewer", viewer: true, value: this.data, width: '100%', height: 'auto', visible: false })),
+                this.$render("i-markdown-editor", { id: "mdViewer", viewer: true, value: this.data, width: '100%', height: 'auto', visible: false }),
                 this.$render("i-panel", { id: "pnlEmpty" },
                     this.$render("i-label", { caption: "Click to edit text", opacity: 0.5, font: { color: '#222' }, padding: { top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' } })),
                 this.$render("i-panel", { id: "pnlEditorWrap" })));

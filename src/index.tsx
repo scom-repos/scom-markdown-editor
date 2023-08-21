@@ -499,16 +499,14 @@ export default class ScomMarkdownEditor extends Module {
     render() {
         return (
             <i-vstack id="pnlMarkdownEditor">
-                <i-panel minHeight={20}>
-                    <i-markdown-editor
-                        id="mdViewer"
-                        viewer={true}
-                        value = {this.data}
-                        width='100%'
-                        height='auto'
-                        visible={false}
-                    ></i-markdown-editor>
-                </i-panel>
+                <i-markdown-editor
+                    id="mdViewer"
+                    viewer={true}
+                    value = {this.data}
+                    width='100%'
+                    height='auto'
+                    visible={false}
+                ></i-markdown-editor>
                 <i-panel id="pnlEmpty">
                     <i-label
                         caption="Click to edit text"
