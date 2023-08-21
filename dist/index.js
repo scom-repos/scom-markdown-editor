@@ -45,7 +45,12 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
                         display: 'none'
                     },
                     '.toastui-editor-defaultUI .ProseMirror': {
-                        padding: '0.5rem'
+                        padding: '0',
+                        margin: '10px 0'
+                    },
+                    '.toastui-editor-defaultUI': {
+                        border: 'none',
+                        outline: 'none'
                     },
                     '.toastui-editor-mode-switch': {
                         background: 'transparent'
@@ -57,9 +62,6 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
                         backgroundColor: "transparent"
                     },
                     '.toastui-editor-contents': {
-                        transition: 'all 125ms cubic-bezier(0.4,0,0.2,1)'
-                    },
-                    '.toastui-editor .ww-mode': {
                         transition: 'all 125ms cubic-bezier(0.4,0,0.2,1)'
                     }
                 }
@@ -208,7 +210,7 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
         }
         get content() {
             var _a;
-            return ((_a = this.mdEditor) === null || _a === void 0 ? void 0 : _a.getMarkdownValue()) || this._data;
+            return (_a = this.mdEditor) === null || _a === void 0 ? void 0 : _a.getMarkdownValue();
         }
         set content(value) {
             this._data = value;
@@ -443,9 +445,11 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
         onToggleEditor(value) {
             var _a;
             this.mdEditor.visible = value;
+            this.setAttribute('contenteditable', `${value}`);
             this.mdViewer.visible = !value;
+            this.pnlEmpty.visible = !value;
             if (!value) {
-                const newVal = ((_a = this.mdEditor) === null || _a === void 0 ? void 0 : _a.getMarkdownValue()) || this._data;
+                const newVal = (_a = this.mdEditor) === null || _a === void 0 ? void 0 : _a.getMarkdownValue();
                 this.mdViewer.value = newVal;
                 this.toggleEmpty(!newVal);
                 if (newVal !== this._data)
@@ -479,12 +483,17 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                     this.data = data;
             }
             const builder = this.closest('i-scom-page-builder');
-            this.setAttribute('draggable', 'false');
-            this.setAttribute('contenteditable', builder ? 'true' : 'false');
+            // this.setAttribute('draggable', 'false');
+            // this.setAttribute('contenteditable', 'false');
             if (builder) {
                 await this.renderEditor();
                 this.addEventListener('blur', this.onBlurHandler);
-                document.addEventListener('selectionchange', this.onSelectionHandler);
+                // document.addEventListener('selectionchange', this.onSelectionHandler);
+                this.mdViewer.addEventListener("selectstart", () => {
+                    this.setAttribute('contenteditable', 'false');
+                    if (builder)
+                        this.onToggleEditor(true);
+                });
             }
             else {
                 this.onHide();
@@ -508,7 +517,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
         }
         onHide() {
             this.removeEventListener('blur', this.onBlurHandler);
-            document.removeEventListener('selectionchange', this.onSelectionHandler);
+            // document.removeEventListener('selectionchange', this.onSelectionHandler);
         }
         onSelectionHandler(event) {
             var _a, _b, _c, _d;
@@ -536,7 +545,6 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             this.selectionTimer = setTimeout(() => {
                 var _a;
                 const selection = document.getSelection();
-                const selectionText = selection.toString();
                 this.resetEditors();
                 if (selection && selection.rangeCount > 0) {
                     const range = selection.getRangeAt(0);
@@ -550,12 +558,6 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                         const isDragging = (_a = parentEditor === null || parentEditor === void 0 ? void 0 : parentEditor.closest('ide-toolbar')) === null || _a === void 0 ? void 0 : _a.classList.contains('to-be-dropped');
                         if (parentEditor && !isDragging) {
                             parentEditor.onToggleEditor(true);
-                            if (commonAncestorContainer.TEXT_NODE) {
-                                const startIndex = this.data.indexOf(selectionText);
-                                if (startIndex >= 0) {
-                                    this.mdEditor.getEditorElm().setSelection(startIndex, selectionText.length);
-                                }
-                            }
                         }
                     }
                 }
@@ -721,6 +723,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                     }
                     else if (prop === 'backgroundColor') {
                         this.tag.backgroundColor = (newValue === null || newValue === void 0 ? void 0 : newValue.settingBgColor) || this.getBackgroundColor();
+                        // this.tag.backgroundColor = newValue.backgroundColor || newValue?.settingBgColor || this.getBackgroundColor();
                     }
                     else if (prop === 'textColor') {
                         const isNew = (newValue === null || newValue === void 0 ? void 0 : newValue.textColor) && newValue.textColor !== this.tag.textColor;

@@ -46,7 +46,7 @@ export default class Config extends Module {
   tag: any = {};
 
   get content() {
-    return this.mdEditor?.getMarkdownValue() || this._data
+    return this.mdEditor?.getMarkdownValue()
   }
   set content(value: string) {
     this._data = value

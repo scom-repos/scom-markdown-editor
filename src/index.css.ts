@@ -39,7 +39,12 @@ Styles.cssRule('i-scom-markdown-editor', {
                     display: 'none'
                 },
                 '.toastui-editor-defaultUI .ProseMirror': {
-                    padding: '0.5rem'
+                    padding: '0',
+                    margin: '10px 0'
+                },
+                '.toastui-editor-defaultUI': {
+                    border: 'none',
+                    outline: 'none'
                 },
                 '.toastui-editor-mode-switch': {
                     background: 'transparent'
@@ -51,9 +56,6 @@ Styles.cssRule('i-scom-markdown-editor', {
                     backgroundColor: "transparent"
                 },
                 '.toastui-editor-contents': {
-                    transition: 'all 125ms cubic-bezier(0.4,0,0.2,1)'
-                },
-                '.toastui-editor .ww-mode': {
                     transition: 'all 125ms cubic-bezier(0.4,0,0.2,1)'
                 }
             }
