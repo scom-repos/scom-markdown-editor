@@ -192,6 +192,15 @@ define("@scom/scom-markdown-editor/editor/index.css.ts", ["require", "exports", 
             },
             '#mdEditor .toastui-editor-ww-container': {
                 backgroundColor: 'var(--bg-container, transparent)'
+            },
+            '.paragraph': {
+                fontSize: '1.125rem !important'
+            },
+            '[data-type="Paragraph"]': {
+                display: 'none'
+            },
+            '.p-item:hover': {
+                background: '#dff4ff'
             }
         }
     });
@@ -200,13 +209,15 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_3.Styles.Theme.ThemeVars;
+    const LARGE_SIZE = 24;
     let Config = class Config extends components_3.Module {
-        constructor() {
-            super(...arguments);
+        constructor(parent, options) {
+            super(parent, options);
             this._data = '';
             this._theme = 'light';
             this.isStopped = false;
             this.tag = {};
+            this.onParagraphClicked = this.onParagraphClicked.bind(this);
         }
         get content() {
             var _a;
@@ -224,6 +235,9 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
             this._theme = value;
             if (this.mdEditor)
                 this.mdEditor.theme = value;
+        }
+        get currentEditor() {
+            return this.mdEditor.getEditorElm();
         }
         getTag() {
             return this.tag;
@@ -251,7 +265,8 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
                     mode: 'wysiwyg',
                     width: '100%',
                     height: 'auto',
-                    theme: this.theme
+                    theme: this.theme,
+                    plugins: [this.paragraphPlugin.bind(this)]
                 });
                 this.mdEditor.display = 'block';
                 this.pnlEditor.clearInnerHTML();
@@ -260,6 +275,73 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
             this.mdEditor.value = this._data;
             this.mdEditor.theme = this.theme;
             this.updateMardown();
+        }
+        onParagraphClicked(level) {
+            if (this.currentEditor) {
+                this.currentEditor.exec('paragraph', { level });
+                this.currentEditor.eventEmitter.emit('closePopup');
+            }
+        }
+        paragraphPlugin(context, options) {
+            const container = document.createElement('div');
+            this.createPDropdown(container);
+            return {
+                markdownCommands: {
+                    paragraph: ({ level }, state, dispatch) => {
+                        return true;
+                    }
+                },
+                wysiwygCommands: {
+                    paragraph: ({ level }, state, dispatch) => {
+                        const { tr, selection, doc, schema } = state;
+                        const pos = selection.$head.path[1];
+                        const node = doc.child(pos);
+                        if (node) {
+                            const attrs = { htmlAttrs: { style: `font-size: ${LARGE_SIZE - (level * 2)}px; display: block;` } };
+                            const mark = schema.marks.span.create(attrs);
+                            const nodePos = selection.$head.path[2];
+                            tr.addMark(nodePos, nodePos + node.nodeSize, mark);
+                            dispatch(tr);
+                            return true;
+                        }
+                        return false;
+                    }
+                },
+                toolbarItems: [
+                    {
+                        groupIndex: 0,
+                        itemIndex: 1,
+                        item: {
+                            name: 'paragraph',
+                            tooltip: 'Paragraph',
+                            text: 'P',
+                            className: 'toastui-editor-toolbar-icons paragraph',
+                            style: { backgroundImage: 'none' },
+                            popup: {
+                                className: 'toastui-editor-popup',
+                                body: container,
+                                style: { width: 'auto' }
+                            }
+                        }
+                    }
+                ],
+                toHTMLRenderers: {
+                    htmlInline: {
+                        span(node, { entering }) {
+                            return entering
+                                ? { type: 'openTag', attributes: node.attrs, tagName: 'span', outerNewLine: true }
+                                : { type: 'closeTag', tagName: 'span', outerNewLine: true };
+                        }
+                    }
+                }
+            };
+        }
+        async createPDropdown(parent) {
+            parent.innerHTML = '';
+            for (let i = 0; i < 6; i++) {
+                parent.appendChild(this.$render("i-hstack", { verticalAlignment: "center", class: "pointer p-item", padding: { top: 4, bottom: 4, left: 12, right: 12 }, onClick: () => this.onParagraphClicked(i) },
+                    this.$render("i-label", { caption: `Paragraph ${i + 1}`, font: { size: `${LARGE_SIZE - (i * 2)}px` } })));
+            }
         }
         toggleStopBtn(value) {
             this.btnStop.visible = value;
@@ -326,8 +408,7 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
         }
         render() {
             return (this.$render("i-panel", { id: "wrapPnl" },
-                this.$render("i-panel", { id: 'pnlEditor' },
-                    this.$render("i-markdown-editor", { id: "mdEditor", width: '100%', height: 'auto', mode: 'wysiwyg' })),
+                this.$render("i-panel", { id: 'pnlEditor' }),
                 this.$render("i-hstack", { id: 'pnlAIPrompt', visible: false, width: '100%', horizontalAlignment: 'space-between', verticalAlignment: 'center', padding: {
                         top: '0.5rem',
                         bottom: '0.5rem',
@@ -448,7 +529,12 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             this.setAttribute('contenteditable', `${value}`);
             this.mdViewer.visible = !value;
             this.pnlEmpty.visible = !value;
-            if (!value) {
+            if (value) {
+                const editorElm = this.mdEditor.getEditorElm();
+                if (editorElm)
+                    editorElm.focus();
+            }
+            else {
                 const newVal = (_a = this.mdEditor) === null || _a === void 0 ? void 0 : _a.getMarkdownValue();
                 this.mdViewer.value = newVal;
                 this.toggleEmpty(!newVal);

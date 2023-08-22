@@ -135,7 +135,10 @@ export default class ScomMarkdownEditor extends Module {
         this.setAttribute('contenteditable', `${value}`);
         this.mdViewer.visible = !value;
         this.pnlEmpty.visible = !value;
-        if (!value) {
+        if (value) {
+            const editorElm = this.mdEditor.getEditorElm();
+            if (editorElm) editorElm.focus();
+        } else {
             const newVal = this.mdEditor?.getMarkdownValue();
             this.mdViewer.value = newVal;
             this.toggleEmpty(!newVal);
