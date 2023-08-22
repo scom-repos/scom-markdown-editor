@@ -151,6 +151,8 @@ define("@scom/scom-markdown-editor/editor/index.css.ts", ["require", "exports", 
         '100%': { "transform": "translate(0, 7px)" }
     });
     components_2.Styles.cssRule('i-scom-markdown-editor-config', {
+        backgroundColor: '#fff',
+        color: '#222',
         $nest: {
             'i-panel.container': {
                 width: Theme.layout.container.width,
@@ -181,8 +183,11 @@ define("@scom/scom-markdown-editor/editor/index.css.ts", ["require", "exports", 
                 flexWrap: 'wrap',
                 height: 'auto'
             },
-            '.toastui-editor-contents p': {
-                color: Theme.text.primary
+            '.toastui-editor-contents': {
+                color: '#222'
+            },
+            '.ProseMirror': {
+                color: '#222'
             },
             '.toastui-editor-mode-switch': {
                 background: 'transparent'
@@ -198,6 +203,12 @@ define("@scom/scom-markdown-editor/editor/index.css.ts", ["require", "exports", 
             },
             '[data-type="Paragraph"]': {
                 display: 'none'
+            },
+            '.p-item': {
+                color: '#222'
+            },
+            '.p-item i-label': {
+                color: '#222'
             },
             '.p-item:hover': {
                 background: '#dff4ff'
@@ -483,12 +494,11 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             return (_a = this._theme) !== null && _a !== void 0 ? _a : 'light';
         }
         set theme(value) {
-            var _a;
             this._theme = value !== null && value !== void 0 ? value : 'light';
-            if (this.pnlMarkdownEditor && !((_a = this.tag) === null || _a === void 0 ? void 0 : _a.settingBgColor)) {
-                this.tag.backgroundColor = this.getBackgroundColor();
-                this.pnlMarkdownEditor.background.color = this.tag.backgroundColor;
-            }
+            // if (this.pnlMarkdownEditor && !this.tag?.settingBgColor) {
+            //     this.tag.backgroundColor = this.getBackgroundColor();
+            //     this.pnlMarkdownEditor.background.color = this.tag.backgroundColor;
+            // }
             this.tag.textColor = this.getTextColor();
             this.updateColor(this.tag.textColor);
             if (this.mdViewer)
@@ -764,7 +774,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             const { width, height, backgroundColor, textAlign = 'left', textColor } = config;
             this.updateColor(textColor);
             if (this.pnlMarkdownEditor) {
-                this.pnlMarkdownEditor.background.color = backgroundColor;
+                // this.pnlMarkdownEditor.background.color = backgroundColor;
                 this.pnlMarkdownEditor.style.textAlign = textAlign;
             }
             if (this.mdViewer) {
