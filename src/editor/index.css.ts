@@ -52,6 +52,15 @@ Styles.cssRule('i-scom-markdown-editor-config', {
     },
     '#mdEditor .toastui-editor-ww-container': {
       backgroundColor: 'var(--bg-container, transparent)'
+    },
+    '.paragraph': {
+      fontSize: '1.125rem !important'
+    },
+    '[data-type="Paragraph"]': {
+      display: 'none'
+    },
+    '.p-item:hover': {
+      background: '#dff4ff'
     }
   }
 });

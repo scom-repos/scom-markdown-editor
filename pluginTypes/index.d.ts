@@ -26,7 +26,7 @@ declare module "@scom/scom-markdown-editor/API.ts" {
 declare module "@scom/scom-markdown-editor/editor/index.css.ts" { }
 /// <amd-module name="@scom/scom-markdown-editor/editor/index.tsx" />
 declare module "@scom/scom-markdown-editor/editor/index.tsx" {
-    import { Module, ControlElement } from '@ijstech/components';
+    import { Module, ControlElement, Container } from '@ijstech/components';
     import "@scom/scom-markdown-editor/editor/index.css.ts";
     interface ScomEditorConfigElement extends ControlElement {
         content?: string;
@@ -53,14 +53,19 @@ declare module "@scom/scom-markdown-editor/editor/index.tsx" {
         private _theme;
         private isStopped;
         tag: any;
+        constructor(parent?: Container, options?: any);
         get content(): string;
         set content(value: string);
         get theme(): ThemeType;
         set theme(value: ThemeType);
+        private get currentEditor();
         getTag(): any;
         setTag(value: any): Promise<void>;
         private updateMardown;
         private renderEditor;
+        private onParagraphClicked;
+        private paragraphPlugin;
+        private createPDropdown;
         private toggleStopBtn;
         private readAllChunks;
         private sendAIPrompt;

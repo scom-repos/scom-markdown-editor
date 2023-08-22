@@ -132,9 +132,14 @@ export default class ScomMarkdownEditor extends Module {
 
     private onToggleEditor(value: boolean) {
         this.mdEditor.visible = value;
+        this.setAttribute('contenteditable', `${value}`);
         this.mdViewer.visible = !value;
-        if (!value) {
-            const newVal = this.mdEditor?.getMarkdownValue() || this._data;
+        this.pnlEmpty.visible = !value;
+        if (value) {
+            const editorElm = this.mdEditor.getEditorElm();
+            if (editorElm) editorElm.focus();
+        } else {
+            const newVal = this.mdEditor?.getMarkdownValue();
             this.mdViewer.value = newVal;
             this.toggleEmpty(!newVal);
             if (newVal !== this._data) this.onConfirm();
@@ -171,12 +176,16 @@ export default class ScomMarkdownEditor extends Module {
             if (data) this.data = data;
         }
         const builder = this.closest('i-scom-page-builder');
-        this.setAttribute('draggable', 'false');
-        this.setAttribute('contenteditable', builder ? 'true' : 'false');
+        // this.setAttribute('draggable', 'false');
+        // this.setAttribute('contenteditable', 'false');
         if (builder) {
             await this.renderEditor();
             this.addEventListener('blur', this.onBlurHandler);
-            document.addEventListener('selectionchange', this.onSelectionHandler);
+            // document.addEventListener('selectionchange', this.onSelectionHandler);
+            this.mdViewer.addEventListener("selectstart", () => {
+                this.setAttribute('contenteditable', 'false');
+                if (builder) this.onToggleEditor(true);
+            })
         } else {
             this.onHide();
         }
@@ -201,7 +210,7 @@ export default class ScomMarkdownEditor extends Module {
 
     onHide(): void {
         this.removeEventListener('blur', this.onBlurHandler);
-        document.removeEventListener('selectionchange', this.onSelectionHandler);
+        // document.removeEventListener('selectionchange', this.onSelectionHandler);
     }
 
     private onSelectionHandler(event: Event) {
@@ -225,7 +234,6 @@ export default class ScomMarkdownEditor extends Module {
         if (this.selectionTimer) clearTimeout(this.selectionTimer);
         this.selectionTimer = setTimeout(() => {
             const selection = document.getSelection();
-            const selectionText = selection.toString();
             this.resetEditors();
             if (selection && selection.rangeCount > 0) {
                 const range = selection.getRangeAt(0);
@@ -239,12 +247,6 @@ export default class ScomMarkdownEditor extends Module {
                     const isDragging = parentEditor?.closest('ide-toolbar')?.classList.contains('to-be-dropped');
                     if (parentEditor && !isDragging) {
                         parentEditor.onToggleEditor(true);
-                        if (commonAncestorContainer.TEXT_NODE) {
-                            const startIndex = this.data.indexOf(selectionText);
-                            if (startIndex >= 0) {
-                                this.mdEditor.getEditorElm().setSelection(startIndex, selectionText.length);
-                            }
-                        }
                     }
                 }
             }
@@ -405,6 +407,7 @@ export default class ScomMarkdownEditor extends Module {
                     this.tag[prop] = typeof newValue[prop] === 'string' ? newValue[prop] : `${newValue[prop]}px`;
                 } else if (prop === 'backgroundColor') {
                     this.tag.backgroundColor = newValue?.settingBgColor || this.getBackgroundColor();
+                    // this.tag.backgroundColor = newValue.backgroundColor || newValue?.settingBgColor || this.getBackgroundColor();
                 } else if (prop === 'textColor') {
                     const isNew = newValue?.textColor && newValue.textColor !== this.tag.textColor;
                     this.tag.textColor = isNew ? newValue.textColor : this.getTextColor();
@@ -499,16 +502,14 @@ export default class ScomMarkdownEditor extends Module {
     render() {
         return (
             <i-vstack id="pnlMarkdownEditor">
-                <i-panel minHeight={20}>
-                    <i-markdown-editor
-                        id="mdViewer"
-                        viewer={true}
-                        value = {this.data}
-                        width='100%'
-                        height='auto'
-                        visible={false}
-                    ></i-markdown-editor>
-                </i-panel>
+                <i-markdown-editor
+                    id="mdViewer"
+                    viewer={true}
+                    value = {this.data}
+                    width='100%'
+                    height='auto'
+                    visible={false}
+                ></i-markdown-editor>
                 <i-panel id="pnlEmpty">
                     <i-label
                         caption="Click to edit text"

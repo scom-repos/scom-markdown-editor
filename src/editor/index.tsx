@@ -8,6 +8,7 @@ import {
   Panel,
   MarkdownEditor,
   Input,
+  Container
 } from '@ijstech/components'
 import { fetchAIGeneratedText } from '../API'
 import './index.css'
@@ -28,6 +29,7 @@ declare global {
 }
 
 type ThemeType = 'dark' | 'light'
+const LARGE_SIZE = 24
 
 @customModule
 @customElements('i-scom-markdown-editor-config')
@@ -45,8 +47,13 @@ export default class Config extends Module {
   private isStopped: boolean = false
   tag: any = {};
 
+  constructor(parent?: Container, options?: any) {
+    super(parent, options);
+    this.onParagraphClicked = this.onParagraphClicked.bind(this)
+  }
+
   get content() {
-    return this.mdEditor?.getMarkdownValue() || this._data
+    return this.mdEditor?.getMarkdownValue()
   }
   set content(value: string) {
     this._data = value
@@ -59,6 +66,10 @@ export default class Config extends Module {
   set theme(value: ThemeType) {
     this._theme = value
     if (this.mdEditor) this.mdEditor.theme = value
+  }
+
+  private get currentEditor() {
+    return this.mdEditor.getEditorElm()
   }
 
   getTag() {
@@ -89,7 +100,8 @@ export default class Config extends Module {
         mode: 'wysiwyg',
         width: '100%',
         height: 'auto',
-        theme: this.theme
+        theme: this.theme,
+        plugins: [this.paragraphPlugin.bind(this)]
       })
       this.mdEditor.display = 'block'
       this.pnlEditor.clearInnerHTML()
@@ -98,6 +110,84 @@ export default class Config extends Module {
     this.mdEditor.value = this._data
     this.mdEditor.theme = this.theme
     this.updateMardown()
+  }
+
+  private onParagraphClicked(level: number) {
+    if (this.currentEditor) {
+      this.currentEditor.exec('paragraph', { level })
+      this.currentEditor.eventEmitter.emit('closePopup')
+    }
+  }
+
+  private paragraphPlugin(context: any, options: any) {
+    const container = document.createElement('div')
+    this.createPDropdown(container)
+    return {
+      markdownCommands: {
+        paragraph: ({ level }, state: any, dispatch: any) => {
+          return true
+        }
+      },
+      wysiwygCommands: {
+        paragraph: ({ level }, state: any, dispatch: any) => {
+          const { tr, selection, doc, schema } = state
+          const pos = selection.$head.path[1]
+          const node = doc.child(pos)
+          if (node) {
+            const attrs = { htmlAttrs: { style: `font-size: ${LARGE_SIZE - (level * 2)}px; display: block;` } }
+            const mark = schema.marks.span.create(attrs)
+            const nodePos = selection.$head.path[2]
+            tr.addMark(nodePos, nodePos + node.nodeSize, mark)
+            dispatch!(tr)
+            return true
+          }
+          return false
+        }
+      },
+      toolbarItems: [
+        {
+          groupIndex: 0,
+          itemIndex: 1,
+          item: {
+            name: 'paragraph',
+            tooltip: 'Paragraph',
+            text: 'P',
+            className: 'toastui-editor-toolbar-icons paragraph',
+            style: { backgroundImage: 'none' },
+            popup: {
+              className: 'toastui-editor-popup',
+              body: container,
+              style: { width: 'auto' }
+            }
+          }
+        }
+      ],
+      toHTMLRenderers: {
+        htmlInline: {
+          span(node: any, { entering }: any) {
+            return entering
+              ? { type: 'openTag', attributes: node.attrs!, tagName: 'span', outerNewLine: true }
+              : { type: 'closeTag', tagName: 'span', outerNewLine: true };
+          }
+        }
+      }
+    }
+  }
+
+  private async createPDropdown(parent: HTMLElement) {
+    parent.innerHTML = ''
+    for (let i = 0; i < 6; i++) {
+      parent.appendChild(
+        <i-hstack
+          verticalAlignment="center"
+          class="pointer p-item"
+          padding={{top: 4, bottom: 4, left: 12, right: 12}}
+          onClick={() => this.onParagraphClicked(i)}
+        >
+          <i-label caption={`Paragraph ${i + 1}`} font={{size: `${LARGE_SIZE - (i * 2)}px`}}></i-label>
+        </i-hstack>
+      )
+    }
   }
 
   private toggleStopBtn(value: boolean) {
@@ -163,16 +253,7 @@ export default class Config extends Module {
       <i-panel
         id="wrapPnl"
       >
-        <i-panel
-          id={'pnlEditor'}
-        >
-          <i-markdown-editor
-            id="mdEditor"
-            width='100%'
-            height='auto'
-            mode='wysiwyg'
-          ></i-markdown-editor>
-        </i-panel>
+        <i-panel id={'pnlEditor'} />
         <i-hstack
           id={'pnlAIPrompt'}
           visible={false}
