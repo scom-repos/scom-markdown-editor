@@ -2,6 +2,13 @@ import {Styles} from '@ijstech/components';
 
 const Theme = Styles.Theme.ThemeVars;
 
+const pStyle = (level: number) => {
+    return {
+        fontSize: `${24 - (level * 2)}px`,
+        display: 'block'
+    }
+}
+
 Styles.cssRule('i-scom-markdown-editor', {
     overflow: 'hidden',
     outline: 'none',
@@ -59,6 +66,12 @@ Styles.cssRule('i-scom-markdown-editor', {
                     transition: 'all 125ms cubic-bezier(0.4,0,0.2,1)'
                 }
             }
-        }
+        },
+        '.p1': pStyle(0),
+        '.p2': pStyle(1),
+        '.p3': pStyle(2),
+        '.p4': pStyle(3),
+        '.p5': pStyle(4),
+        '.p6': pStyle(5)
     }
 });
