@@ -10,6 +10,13 @@ const typingAnim = Styles.keyframes({
   '100%': { "transform": "translate(0, 7px)" }
 })
 
+const pStyle = (level: number) => {
+  return {
+    fontSize: `${24 - (level * 2)}px`,
+    display: 'block'
+  }
+}
+
 Styles.cssRule('i-scom-markdown-editor-config', {
   backgroundColor: '#fff',
   color: '#222',
@@ -72,6 +79,12 @@ Styles.cssRule('i-scom-markdown-editor-config', {
     },
     '.p-item:hover': {
       background: '#dff4ff'
-    }
+    },
+    '.p1': pStyle(0),
+    '.p2': pStyle(1),
+    '.p3': pStyle(2),
+    '.p4': pStyle(3),
+    '.p5': pStyle(4),
+    '.p6': pStyle(5)
   }
 });

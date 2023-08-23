@@ -125,6 +125,17 @@ export default class Config extends Module {
     return {
       markdownCommands: {
         paragraph: ({ level }, state: any, dispatch: any) => {
+          const { tr, selection, doc, schema } = state
+          const index = selection.$head.path[1]
+          const nodePos = selection.$head.path[2]
+          const node = doc.child(index)
+          if (!node) return false
+          const textContent = node.content.textBetween(nodePos, node.content.size, '\n')
+          const openTag = `<span class="p${level + 1}">`
+          const closeTag = `</span>`
+          const newContent = `${openTag}${textContent}${closeTag}`
+          tr.replaceWith(nodePos, nodePos + node.content.size, schema.text(newContent))
+          dispatch!(tr)
           return true
         }
       },
@@ -132,11 +143,11 @@ export default class Config extends Module {
         paragraph: ({ level }, state: any, dispatch: any) => {
           const { tr, selection, doc, schema } = state
           const pos = selection.$head.path[1]
+          const nodePos = selection.$head.path[2]
           const node = doc.child(pos)
           if (node) {
-            const attrs = { htmlAttrs: { style: `font-size: ${LARGE_SIZE - (level * 2)}px; display: block;` } }
+            const attrs = { ...node.attrs, htmlAttrs: { class: `p${level + 1}` } }
             const mark = schema.marks.span.create(attrs)
-            const nodePos = selection.$head.path[2]
             tr.addMark(nodePos, nodePos + node.nodeSize, mark)
             dispatch!(tr)
             return true

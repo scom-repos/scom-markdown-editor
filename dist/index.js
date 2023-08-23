@@ -8,6 +8,12 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_1.Styles.Theme.ThemeVars;
+    const pStyle = (level) => {
+        return {
+            fontSize: `${24 - (level * 2)}px`,
+            display: 'block'
+        };
+    };
     components_1.Styles.cssRule('i-scom-markdown-editor', {
         overflow: 'hidden',
         outline: 'none',
@@ -65,7 +71,13 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
                         transition: 'all 125ms cubic-bezier(0.4,0,0.2,1)'
                     }
                 }
-            }
+            },
+            '.p1': pStyle(0),
+            '.p2': pStyle(1),
+            '.p3': pStyle(2),
+            '.p4': pStyle(3),
+            '.p5': pStyle(4),
+            '.p6': pStyle(5)
         }
     });
 });
@@ -150,6 +162,12 @@ define("@scom/scom-markdown-editor/editor/index.css.ts", ["require", "exports", 
         '75%': { "transform": "translate(0, 0)" },
         '100%': { "transform": "translate(0, 7px)" }
     });
+    const pStyle = (level) => {
+        return {
+            fontSize: `${24 - (level * 2)}px`,
+            display: 'block'
+        };
+    };
     components_2.Styles.cssRule('i-scom-markdown-editor-config', {
         backgroundColor: '#fff',
         color: '#222',
@@ -212,7 +230,13 @@ define("@scom/scom-markdown-editor/editor/index.css.ts", ["require", "exports", 
             },
             '.p-item:hover': {
                 background: '#dff4ff'
-            }
+            },
+            '.p1': pStyle(0),
+            '.p2': pStyle(1),
+            '.p3': pStyle(2),
+            '.p4': pStyle(3),
+            '.p5': pStyle(4),
+            '.p6': pStyle(5)
         }
     });
 });
@@ -299,6 +323,18 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
             return {
                 markdownCommands: {
                     paragraph: ({ level }, state, dispatch) => {
+                        const { tr, selection, doc, schema } = state;
+                        const index = selection.$head.path[1];
+                        const nodePos = selection.$head.path[2];
+                        const node = doc.child(index);
+                        if (!node)
+                            return false;
+                        const textContent = node.content.textBetween(nodePos, node.content.size, '\n');
+                        const openTag = `<span class="p${level + 1}">`;
+                        const closeTag = `</span>`;
+                        const newContent = `${openTag}${textContent}${closeTag}`;
+                        tr.replaceWith(nodePos, nodePos + node.content.size, schema.text(newContent));
+                        dispatch(tr);
                         return true;
                     }
                 },
@@ -306,11 +342,11 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
                     paragraph: ({ level }, state, dispatch) => {
                         const { tr, selection, doc, schema } = state;
                         const pos = selection.$head.path[1];
+                        const nodePos = selection.$head.path[2];
                         const node = doc.child(pos);
                         if (node) {
-                            const attrs = { htmlAttrs: { style: `font-size: ${LARGE_SIZE - (level * 2)}px; display: block;` } };
+                            const attrs = Object.assign(Object.assign({}, node.attrs), { htmlAttrs: { class: `p${level + 1}` } });
                             const mark = schema.marks.span.create(attrs);
-                            const nodePos = selection.$head.path[2];
                             tr.addMark(nodePos, nodePos + node.nodeSize, mark);
                             dispatch(tr);
                             return true;
