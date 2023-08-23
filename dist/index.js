@@ -336,11 +336,13 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
                                 }
                             }
                         });
+                        const mainNode = doc.child(pNode);
+                        if (!mainNode)
+                            return false;
                         if (!hasSet) {
-                            const mainNode = doc.child(pNode);
-                            const textContent = mainNode.content.textBetween(fromPos, mainNode.content.size, '\n');
+                            const textContent = mainNode.content.textBetween(0, mainNode.content.size, '\n').replace(/^\#+/g, '');
                             const newContent = `${openTag}${textContent}${closeTag}`;
-                            tr.replaceWith(fromPos, fromPos + mainNode.nodeSize, schema.text(newContent));
+                            tr.replaceWith(fromPos, fromPos + mainNode.content.size, schema.text(newContent));
                             dispatch(tr);
                         }
                         return true;
@@ -348,16 +350,18 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
                 },
                 wysiwygCommands: {
                     paragraph: ({ level }, state, dispatch) => {
+                        var _a;
                         const { tr, selection, doc, schema } = state;
                         const pos = selection.$head.path[1];
                         const nodePos = selection.$head.path[2];
                         const node = doc.child(pos);
                         if (node) {
-                            const attrs = Object.assign(Object.assign({}, node.attrs), { htmlAttrs: { class: `p${level + 1}` } });
-                            const pNode = schema.nodes.paragraph.create(attrs, node.content, node.marks);
+                            const htmlAttrs = ((_a = node.attrs) === null || _a === void 0 ? void 0 : _a.htmlAttrs) || {};
+                            const attrs = Object.assign(Object.assign({}, node.attrs), { htmlAttrs: Object.assign(Object.assign({}, htmlAttrs), { class: `p${level + 1}` }) });
+                            const pNode = schema.nodes.paragraph.createAndFill(attrs, node.content, node.marks);
                             tr.replaceWith(nodePos, nodePos + node.nodeSize, pNode);
                             const mark = schema.marks.span.create(attrs);
-                            tr.addMark(nodePos, nodePos + node.nodeSize, mark);
+                            tr.addMark(nodePos, nodePos + pNode.nodeSize, mark);
                             dispatch(tr);
                             return true;
                         }
