@@ -126,16 +126,35 @@ export default class Config extends Module {
       markdownCommands: {
         paragraph: ({ level }, state: any, dispatch: any) => {
           const { tr, selection, doc, schema } = state
-          const index = selection.$head.path[1]
-          const nodePos = selection.$head.path[2]
-          const node = doc.child(index)
-          if (!node) return false
-          const textContent = node.content.textBetween(nodePos, node.content.size, '\n')
+          const fromPos = selection.$head.path[2]
+          const pNode = selection.$head.path[1]
           const openTag = `<span class="p${level + 1}">`
           const closeTag = `</span>`
-          const newContent = `${openTag}${textContent}${closeTag}`
-          tr.replaceWith(nodePos, nodePos + node.content.size, schema.text(newContent))
-          dispatch!(tr)
+          let hasSet = false
+          let headingLength = 0
+          doc.descendants((node: any, pos: number) => {
+            if (pos >= fromPos && pos <= fromPos + doc.child(pNode).nodeSize) {
+              const isText = node.type.name === 'text'
+              if (isText) {
+                const content = node.text || ''
+                if (/^\#+/g.test(content)) {
+                  headingLength += node.nodeSize
+                  tr.delete(pos, pos + node.nodeSize)
+                } else if ((/^\<span class=\"p[1-6]\"\>/g).test(content)) {
+                  tr.replaceWith(pos - headingLength, pos + node.nodeSize - headingLength, schema.text(openTag))
+                  dispatch!(tr)
+                  hasSet = true
+                }
+              }
+            }
+          })
+          if (!hasSet) {
+            const mainNode = doc.child(pNode)
+            const textContent = mainNode.content.textBetween(fromPos, mainNode.content.size, '\n')
+            const newContent = `${openTag}${textContent}${closeTag}`
+            tr.replaceWith(fromPos, fromPos + mainNode.nodeSize, schema.text(newContent))
+            dispatch!(tr)
+          }
           return true
         }
       },
@@ -147,6 +166,8 @@ export default class Config extends Module {
           const node = doc.child(pos)
           if (node) {
             const attrs = { ...node.attrs, htmlAttrs: { class: `p${level + 1}` } }
+            const pNode = schema.nodes.paragraph.create(attrs, node.content, node.marks)
+            tr.replaceWith(nodePos, nodePos + node.nodeSize, pNode)
             const mark = schema.marks.span.create(attrs)
             tr.addMark(nodePos, nodePos + node.nodeSize, mark)
             dispatch!(tr)
