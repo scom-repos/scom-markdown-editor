@@ -4,8 +4,7 @@ const Theme = Styles.Theme.ThemeVars;
 
 const pStyle = (level: number) => {
     return {
-        fontSize: `${24 - (level * 2)}px`,
-        display: 'block'
+        fontSize: `${24 - (level * 2)}px`
     }
 }
 
@@ -35,7 +34,7 @@ Styles.cssRule('i-scom-markdown-editor', {
         //     content: "none",
         // },
         '.toastui-editor-contents p': {
-            color: Theme.text.primary
+            color: Theme.editor.fontColor
         },
         '#pnlEditorWrap': {
             $nest: {
@@ -57,21 +56,21 @@ Styles.cssRule('i-scom-markdown-editor', {
                     background: 'transparent'
                 },
                 ".toastui-editor-md-container": {
-                    backgroundColor: "transparent"
+                    backgroundColor: Theme.editor.background
                 },
                 ".toastui-editor-ww-container": {
-                    backgroundColor: "transparent"
+                    backgroundColor: Theme.editor.background
                 },
                 '.toastui-editor-contents': {
                     transition: 'all 125ms cubic-bezier(0.4,0,0.2,1)'
                 }
             }
         },
-        '.p1': pStyle(0),
-        '.p2': pStyle(1),
-        '.p3': pStyle(2),
-        '.p4': pStyle(3),
-        '.p5': pStyle(4),
-        '.p6': pStyle(5)
+        '.custom-p .p1, p .p1': pStyle(0),
+        '.custom-p .p2, p .p2': pStyle(1),
+        '.custom-p .p3, p .p3': pStyle(2),
+        '.custom-p .p4, p .p4': pStyle(3),
+        '.custom-p .p5, p .p5': pStyle(4),
+        '.custom-p .p6, p .p6': pStyle(5)
     }
 });

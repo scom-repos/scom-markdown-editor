@@ -90,7 +90,7 @@ export default class ScomMarkdownEditor extends Module {
         this._theme = value ?? 'light';
         if (this.pnlMarkdownEditor && !this.tag?.settingBgColor) {
             this.tag.backgroundColor = this.getBackgroundColor();
-            this.pnlMarkdownEditor.background.color = this.tag.backgroundColor;
+            this.style.setProperty('--editor-background', this.tag.backgroundColor);
         }
         this.tag.textColor = this.getTextColor();
         this.updateColor(this.tag.textColor);
@@ -361,7 +361,7 @@ export default class ScomMarkdownEditor extends Module {
         const { width, height, backgroundColor, textAlign = 'left', textColor } = config;
         this.updateColor(textColor);
         if (this.pnlMarkdownEditor) {
-            this.pnlMarkdownEditor.background.color = backgroundColor;
+            this.style.setProperty('--editor-background', backgroundColor);
             this.pnlMarkdownEditor.style.textAlign = textAlign;
         }
         if (this.mdViewer) {
@@ -371,8 +371,8 @@ export default class ScomMarkdownEditor extends Module {
     }
 
     private updateColor(textColor: string) {
-        if (textColor) this.style.setProperty('--text-primary', textColor);
-        else this.style.removeProperty('--text-primary');
+        if (textColor) this.style.setProperty('--editor-font_color', textColor);
+        else this.style.removeProperty('--editor-font_color');
     }
 
     private getData() {

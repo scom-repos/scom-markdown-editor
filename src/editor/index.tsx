@@ -86,10 +86,10 @@ export default class Config extends Module {
     if (this.wrapPnl) {
       const { backgroundColor, textColor, textAlign } = this.tag;
       this.wrapPnl.style.textAlign = textAlign || "left";
-      this.wrapPnl.style.setProperty('--bg-container', backgroundColor || '');
+      this.style.setProperty('--editor-background', backgroundColor || '');
       if (textColor)
-        this.wrapPnl.style.setProperty('--text-primary', textColor);
-      else this.wrapPnl.style.removeProperty('--text-primary');
+        this.style.setProperty('--editor-font_color', textColor);
+      else this.style.removeProperty('--editor-font_color');
     }
   }
 
@@ -114,7 +114,7 @@ export default class Config extends Module {
 
   private onParagraphClicked(level: number) {
     if (this.currentEditor) {
-      this.currentEditor.exec('paragraph', { level })
+      this.currentEditor.exec('customParagraph', { level })
       this.currentEditor.eventEmitter.emit('closePopup')
     }
   }
@@ -124,7 +124,7 @@ export default class Config extends Module {
     this.createPDropdown(container)
     return {
       markdownCommands: {
-        paragraph: ({ level }, state: any, dispatch: any) => {
+        customParagraph: ({ level }, state: any, dispatch: any) => {
           const { tr, selection, doc, schema } = state
           const fromPos = selection.$head.path[2]
           const pNode = selection.$head.path[1]
@@ -140,9 +140,9 @@ export default class Config extends Module {
                 if (/^\#+/g.test(content)) {
                   headingLength += node.nodeSize
                   tr.delete(pos, pos + node.nodeSize)
-                } else if ((/^\<span class=\"p[1-6]\"\>/g).test(content)) {
-                  tr.replaceWith(pos - headingLength, pos + node.nodeSize - headingLength, schema.text(openTag))
-                  dispatch!(tr)
+                } else if ((/class=\"p[1-6]\"/g).test(content)) {
+                  const newText = content.replace(/class=\"p[1-6]\"/g, `class="p${level + 1}"`)
+                  tr.replaceWith(pos - headingLength, pos + node.nodeSize - headingLength, schema.text(newText))
                   hasSet = true
                 }
               }
@@ -154,24 +154,33 @@ export default class Config extends Module {
             const textContent = mainNode.content.textBetween(0, mainNode.content.size, '\n').replace(/^\#+/g, '')
             const newContent = `${openTag}${textContent}${closeTag}`
             tr.replaceWith(fromPos, fromPos + mainNode.content.size, schema.text(newContent))
-            dispatch!(tr)
           }
+          dispatch!(tr)
           return true
         }
       },
       wysiwygCommands: {
-        paragraph: ({ level }, state: any, dispatch: any) => {
+        customParagraph: ({ level }, state: any, dispatch: any) => {
           const { tr, selection, doc, schema } = state
-          const pos = selection.$head.path[1]
+          const nodeIndex = selection.$head.path[1]
           const nodePos = selection.$head.path[2]
-          const node = doc.child(pos)
+          let node = doc.child(nodeIndex)
           if (node) {
-            const htmlAttrs = node.attrs?.htmlAttrs || {}
-            const attrs = { ...node.attrs, htmlAttrs: { ...htmlAttrs, class: `p${level + 1}` } }
-            const pNode = schema.nodes.paragraph.createAndFill(attrs, node.content, node.marks)
+            const attrs = { ...node.attrs, htmlAttrs: {class: `p${level + 1}`}, classNames: [`p${level + 1}`] }
+            const pNode = schema.nodes.paragraph.create(attrs, node.content, node.marks)
             tr.replaceWith(nodePos, nodePos + node.nodeSize, pNode)
-            const mark = schema.marks.span.create(attrs)
-            tr.addMark(nodePos, nodePos + pNode.nodeSize, mark)
+            const pMark = schema.marks.span.create(attrs)
+            tr.addMark(nodePos, nodePos + pNode.nodeSize, pMark)
+            pNode.descendants((node: any, pos: number) => {
+              if (node.marks.length) {
+                for (let mark of node.marks) {
+                  const oldAttrs = mark.attrs?.htmlAttrs || {}
+                  const newAttrs = {class: `p${level + 1}`}
+                  const newMark = schema.marks.span.create({...mark.attrs, htmlAttrs: {...oldAttrs, ...newAttrs}})
+                  tr.addMark(pos, pos + node.nodeSize, newMark)
+                }
+              }
+            })
             dispatch!(tr)
             return true
           }
@@ -197,11 +206,26 @@ export default class Config extends Module {
         }
       ],
       toHTMLRenderers: {
+        paragraph(node: any, context: any) {
+          return context.entering
+          ? { type: 'openTag', tagName: 'div', attributes: node.attrs!, classNames: ['custom-p'], outerNewLine: true, innerNewLine: true }
+          : { type: 'closeTag', tagName: 'div', outerNewLine: true, innerNewLine: true }
+        },
         htmlInline: {
-          span(node: any, { entering }: any) {
+          span(node: any, { entering }) {
+            let attributes = {...node.attrs}
+            // if (!attributes.class && node.literal !== '</span>') {
+            //   const firstChild = node.parent?.firstChild || null
+            //   let className = ''
+            //   if (firstChild) {
+            //     const execData = (/^\<span class=\"(p[1-6])\"\>/g).exec(firstChild.literal || '')
+            //     className = execData ? execData[1] : ''
+            //     attributes.class = className
+            //   }
+            // }
             return entering
-              ? { type: 'openTag', attributes: node.attrs!, tagName: 'span', outerNewLine: true }
-              : { type: 'closeTag', tagName: 'span', outerNewLine: true };
+              ? { type: 'openTag', tagName: 'span', attributes}
+              : { type: 'closeTag', tagName: 'span' };
           }
         }
       }
