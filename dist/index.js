@@ -10,7 +10,8 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
     const Theme = components_1.Styles.Theme.ThemeVars;
     const pStyle = (level) => {
         return {
-            fontSize: `${24 - (level * 2)}px`
+            fontSize: `${24 - (level * 2)}px`,
+            fontWeight: 'normal'
         };
     };
     components_1.Styles.cssRule('i-scom-markdown-editor', {
@@ -163,7 +164,8 @@ define("@scom/scom-markdown-editor/editor/index.css.ts", ["require", "exports", 
     });
     const pStyle = (level) => {
         return {
-            fontSize: `${24 - (level * 2)}px`
+            fontSize: `${24 - (level * 2)}px`,
+            fontWeight: 'normal'
         };
     };
     components_2.Styles.cssRule('i-scom-markdown-editor-config', {
@@ -252,6 +254,7 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
             this._data = '';
             this._theme = 'light';
             this.isStopped = false;
+            this.pLevel = 0;
             this.tag = {};
             this.onParagraphClicked = this.onParagraphClicked.bind(this);
         }
@@ -307,6 +310,10 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
                 this.mdEditor.display = 'block';
                 this.pnlEditor.clearInnerHTML();
                 this.pnlEditor.appendChild(this.mdEditor);
+                // this.currentEditor.eventEmitter.listen('color', (data) => {
+                //   console.log(data)
+                //   console.log(this.pLevel)
+                // })
             }
             this.mdEditor.value = this._data;
             this.mdEditor.theme = this.theme;
@@ -314,6 +321,7 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
         }
         onParagraphClicked(level) {
             if (this.currentEditor) {
+                this.pLevel = level;
                 this.currentEditor.exec('customParagraph', { level });
                 this.currentEditor.eventEmitter.emit('closePopup');
             }
@@ -372,14 +380,13 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
                             tr.replaceWith(nodePos, nodePos + node.nodeSize, pNode);
                             const pMark = schema.marks.span.create(attrs);
                             tr.addMark(nodePos, nodePos + pNode.nodeSize, pMark);
-                            pNode.descendants((node, pos) => {
+                            pNode.descendants((childNode, childPos) => {
                                 var _a;
-                                if (node.marks.length) {
-                                    for (let mark of node.marks) {
-                                        const oldAttrs = ((_a = mark.attrs) === null || _a === void 0 ? void 0 : _a.htmlAttrs) || {};
-                                        const newAttrs = { class: `p${level + 1}` };
-                                        const newMark = schema.marks.span.create(Object.assign(Object.assign({}, mark.attrs), { htmlAttrs: Object.assign(Object.assign({}, oldAttrs), newAttrs) }));
-                                        tr.addMark(pos, pos + node.nodeSize, newMark);
+                                if (childNode.marks.length && childPos >= nodePos && childPos <= nodePos + pNode.nodeSize) {
+                                    for (let mark of childNode.marks) {
+                                        const htmlAttrs = Object.assign(Object.assign({}, (((_a = mark.attrs) === null || _a === void 0 ? void 0 : _a.htmlAttrs) || {})), { class: `p${level + 1}` });
+                                        const newMark = schema.marks.span.create(Object.assign(Object.assign({}, mark.attrs), { htmlAttrs }));
+                                        tr.addMark(childPos, childPos + childNode.nodeSize, newMark);
                                     }
                                 }
                             });
@@ -415,18 +422,22 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
                     },
                     htmlInline: {
                         span(node, { entering }) {
+                            var _a;
                             let attributes = Object.assign({}, node.attrs);
-                            // if (!attributes.class && node.literal !== '</span>') {
-                            //   const firstChild = node.parent?.firstChild || null
-                            //   let className = ''
-                            //   if (firstChild) {
-                            //     const execData = (/^\<span class=\"(p[1-6])\"\>/g).exec(firstChild.literal || '')
-                            //     className = execData ? execData[1] : ''
-                            //     attributes.class = className
-                            //   }
-                            // }
+                            if (!attributes.class && node.literal !== '</span>') {
+                                const firstChild = ((_a = node.parent) === null || _a === void 0 ? void 0 : _a.firstChild) || null;
+                                let className = '';
+                                if (firstChild) {
+                                    const execData = (/^\<span class=\"(p[1-6])\"\>/g).exec(firstChild.literal || '');
+                                    className = execData ? execData[1] : '';
+                                    attributes.class = className;
+                                }
+                            }
+                            const classNames = attributes.classNames || [];
+                            if (attributes.class)
+                                classNames.push(attributes.class);
                             return entering
-                                ? { type: 'openTag', tagName: 'span', attributes }
+                                ? { type: 'openTag', tagName: 'span', attributes, classNames }
                                 : { type: 'closeTag', tagName: 'span' };
                         }
                     }

@@ -12,7 +12,8 @@ const typingAnim = Styles.keyframes({
 
 const pStyle = (level: number) => {
   return {
-    fontSize: `${24 - (level * 2)}px`
+    fontSize: `${24 - (level * 2)}px`,
+    fontWeight: 'normal'
   }
 }
 

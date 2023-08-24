@@ -45,6 +45,7 @@ export default class Config extends Module {
   private _data: string = ''
   private _theme: ThemeType = 'light'
   private isStopped: boolean = false
+  private pLevel: number = 0
   tag: any = {};
 
   constructor(parent?: Container, options?: any) {
@@ -106,6 +107,10 @@ export default class Config extends Module {
       this.mdEditor.display = 'block'
       this.pnlEditor.clearInnerHTML()
       this.pnlEditor.appendChild(this.mdEditor)
+      // this.currentEditor.eventEmitter.listen('color', (data) => {
+      //   console.log(data)
+      //   console.log(this.pLevel)
+      // })
     }
     this.mdEditor.value = this._data
     this.mdEditor.theme = this.theme
@@ -114,6 +119,7 @@ export default class Config extends Module {
 
   private onParagraphClicked(level: number) {
     if (this.currentEditor) {
+      this.pLevel = level
       this.currentEditor.exec('customParagraph', { level })
       this.currentEditor.eventEmitter.emit('closePopup')
     }
@@ -171,13 +177,12 @@ export default class Config extends Module {
             tr.replaceWith(nodePos, nodePos + node.nodeSize, pNode)
             const pMark = schema.marks.span.create(attrs)
             tr.addMark(nodePos, nodePos + pNode.nodeSize, pMark)
-            pNode.descendants((node: any, pos: number) => {
-              if (node.marks.length) {
-                for (let mark of node.marks) {
-                  const oldAttrs = mark.attrs?.htmlAttrs || {}
-                  const newAttrs = {class: `p${level + 1}`}
-                  const newMark = schema.marks.span.create({...mark.attrs, htmlAttrs: {...oldAttrs, ...newAttrs}})
-                  tr.addMark(pos, pos + node.nodeSize, newMark)
+            pNode.descendants((childNode: any, childPos: number) => {
+              if (childNode.marks.length && childPos >= nodePos && childPos <= nodePos + pNode.nodeSize) {
+                for (let mark of childNode.marks) {
+                  const htmlAttrs = {...(mark.attrs?.htmlAttrs || {}), class: `p${level + 1}`}
+                  const newMark = schema.marks.span.create({...mark.attrs, htmlAttrs})
+                  tr.addMark(childPos, childPos + childNode.nodeSize, newMark)
                 }
               }
             })
@@ -214,17 +219,19 @@ export default class Config extends Module {
         htmlInline: {
           span(node: any, { entering }) {
             let attributes = {...node.attrs}
-            // if (!attributes.class && node.literal !== '</span>') {
-            //   const firstChild = node.parent?.firstChild || null
-            //   let className = ''
-            //   if (firstChild) {
-            //     const execData = (/^\<span class=\"(p[1-6])\"\>/g).exec(firstChild.literal || '')
-            //     className = execData ? execData[1] : ''
-            //     attributes.class = className
-            //   }
-            // }
+            if (!attributes.class && node.literal !== '</span>') {
+              const firstChild = node.parent?.firstChild || null
+              let className = ''
+              if (firstChild) {
+                const execData = (/^\<span class=\"(p[1-6])\"\>/g).exec(firstChild.literal || '')
+                className = execData ? execData[1] : ''
+                attributes.class = className
+              }
+            }
+            const classNames = attributes.classNames || []
+            if (attributes.class) classNames.push(attributes.class)
             return entering
-              ? { type: 'openTag', tagName: 'span', attributes}
+              ? { type: 'openTag', tagName: 'span', attributes, classNames}
               : { type: 'closeTag', tagName: 'span' };
           }
         }
