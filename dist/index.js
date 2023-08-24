@@ -167,6 +167,8 @@ define("@scom/scom-markdown-editor/editor/index.css.ts", ["require", "exports", 
         };
     };
     components_2.Styles.cssRule('i-scom-markdown-editor-config', {
+        backgroundColor: '#fff',
+        color: '#222',
         $nest: {
             'i-panel.container': {
                 width: Theme.layout.container.width,
@@ -200,6 +202,12 @@ define("@scom/scom-markdown-editor/editor/index.css.ts", ["require", "exports", 
             '.toastui-editor-contents p': {
                 color: Theme.editor.fontColor
             },
+            '.toastui-editor-contents': {
+                color: Theme.editor.fontColor
+            },
+            '.ProseMirror': {
+                color: Theme.editor.fontColor
+            },
             '.toastui-editor-mode-switch': {
                 background: 'transparent'
             },
@@ -214,6 +222,12 @@ define("@scom/scom-markdown-editor/editor/index.css.ts", ["require", "exports", 
             },
             '[data-type="Paragraph"]': {
                 display: 'none'
+            },
+            '.p-item': {
+                color: '#222'
+            },
+            '.p-item i-label': {
+                color: '#222'
             },
             '.p-item:hover': {
                 background: '#dff4ff'

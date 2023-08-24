@@ -17,6 +17,8 @@ const pStyle = (level: number) => {
 }
 
 Styles.cssRule('i-scom-markdown-editor-config', {
+  backgroundColor: '#fff',
+  color: '#222',
   $nest: {
     'i-panel.container': {
       width: Theme.layout.container.width,
@@ -50,6 +52,12 @@ Styles.cssRule('i-scom-markdown-editor-config', {
     '.toastui-editor-contents p': {
       color: Theme.editor.fontColor
     },
+    '.toastui-editor-contents': {
+      color: Theme.editor.fontColor
+    },
+    '.ProseMirror': {
+      color: Theme.editor.fontColor
+    },
     '.toastui-editor-mode-switch': {
       background: 'transparent'
     },
@@ -64,6 +72,12 @@ Styles.cssRule('i-scom-markdown-editor-config', {
     },
     '[data-type="Paragraph"]': {
       display: 'none'
+    },
+    '.p-item': {
+      color: '#222'
+    },
+    '.p-item i-label': {
+      color: '#222'
     },
     '.p-item:hover': {
       background: '#dff4ff'
