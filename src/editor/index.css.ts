@@ -13,7 +13,7 @@ const typingAnim = Styles.keyframes({
 const pStyle = (level: number) => {
   return {
     fontSize: `${24 - (level * 2)}px`,
-    display: 'block'
+    fontWeight: 'normal'
   }
 }
 
@@ -50,20 +50,23 @@ Styles.cssRule('i-scom-markdown-editor-config', {
       flexWrap: 'wrap',
       height: 'auto'
     },
+    '.toastui-editor-contents p': {
+      color: Theme.editor.fontColor
+    },
     '.toastui-editor-contents': {
-      color: '#222'
+      color: Theme.editor.fontColor
     },
     '.ProseMirror': {
-      color: '#222'
+      color: Theme.editor.fontColor
     },
     '.toastui-editor-mode-switch': {
       background: 'transparent'
     },
-    '#mdEditor .toastui-editor-md-container': {
-      backgroundColor: 'var(--bg-container, transparent)'
+    '#wrapPnl .toastui-editor-md-container': {
+      backgroundColor: Theme.editor.background
     },
-    '#mdEditor .toastui-editor-ww-container': {
-      backgroundColor: 'var(--bg-container, transparent)'
+    '#wrapPnl .toastui-editor-ww-container': {
+      backgroundColor: Theme.editor.background
     },
     '.paragraph': {
       fontSize: '1.125rem !important'
@@ -80,11 +83,11 @@ Styles.cssRule('i-scom-markdown-editor-config', {
     '.p-item:hover': {
       background: '#dff4ff'
     },
-    '.p1': pStyle(0),
-    '.p2': pStyle(1),
-    '.p3': pStyle(2),
-    '.p4': pStyle(3),
-    '.p5': pStyle(4),
-    '.p6': pStyle(5)
+    '.custom-p .p1, p .p1': pStyle(0),
+    '.custom-p .p2, p .p2': pStyle(1),
+    '.custom-p .p3, p .p3': pStyle(2),
+    '.custom-p .p4, p .p4': pStyle(3),
+    '.custom-p .p5, p .p5': pStyle(4),
+    '.custom-p .p6, p .p6': pStyle(5)
   }
 });
