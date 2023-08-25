@@ -310,10 +310,6 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
                 this.mdEditor.display = 'block';
                 this.pnlEditor.clearInnerHTML();
                 this.pnlEditor.appendChild(this.mdEditor);
-                // this.currentEditor.eventEmitter.listen('color', (data) => {
-                //   console.log(data)
-                //   console.log(this.pLevel)
-                // })
             }
             this.mdEditor.value = this._data;
             this.mdEditor.theme = this.theme;
@@ -329,6 +325,12 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
         paragraphPlugin(context, options) {
             const container = document.createElement('div');
             this.createPDropdown(container);
+            context.eventEmitter.listen('command', (type, params) => {
+                if (type === 'color' && this.pLevel) {
+                    this.currentEditor.exec('color', params);
+                    this.currentEditor.exec('customParagraph', { level: this.pLevel });
+                }
+            });
             return {
                 markdownCommands: {
                     customParagraph: ({ level }, state, dispatch) => {
@@ -1013,7 +1015,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             return (this.$render("i-vstack", { id: "pnlMarkdownEditor" },
                 this.$render("i-markdown-editor", { id: "mdViewer", viewer: true, value: this.data, width: '100%', height: 'auto', visible: false }),
                 this.$render("i-panel", { id: "pnlEmpty" },
-                    this.$render("i-label", { caption: "Click to edit text", opacity: 0.5, font: { color: '#222' }, padding: { top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' } })),
+                    this.$render("i-label", { caption: "Click to edit text", opacity: 0.5, font: { color: Theme.editor.fontColor }, padding: { top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' } })),
                 this.$render("i-panel", { id: "pnlEditorWrap" })));
         }
     };
