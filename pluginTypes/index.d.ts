@@ -52,6 +52,7 @@ declare module "@scom/scom-markdown-editor/editor/index.tsx" {
         private _data;
         private _theme;
         private isStopped;
+        private pLevel;
         tag: any;
         constructor(parent?: Container, options?: any);
         get content(): string;

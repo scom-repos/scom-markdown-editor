@@ -11,7 +11,7 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
     const pStyle = (level) => {
         return {
             fontSize: `${24 - (level * 2)}px`,
-            display: 'block'
+            fontWeight: 'normal'
         };
     };
     components_1.Styles.cssRule('i-scom-markdown-editor', {
@@ -40,7 +40,7 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
             //     content: "none",
             // },
             '.toastui-editor-contents p': {
-                color: Theme.text.primary
+                color: Theme.editor.fontColor
             },
             '#pnlEditorWrap': {
                 $nest: {
@@ -62,22 +62,22 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
                         background: 'transparent'
                     },
                     ".toastui-editor-md-container": {
-                        backgroundColor: "transparent"
+                        backgroundColor: Theme.editor.background
                     },
                     ".toastui-editor-ww-container": {
-                        backgroundColor: "transparent"
+                        backgroundColor: Theme.editor.background
                     },
                     '.toastui-editor-contents': {
                         transition: 'all 125ms cubic-bezier(0.4,0,0.2,1)'
                     }
                 }
             },
-            '.p1': pStyle(0),
-            '.p2': pStyle(1),
-            '.p3': pStyle(2),
-            '.p4': pStyle(3),
-            '.p5': pStyle(4),
-            '.p6': pStyle(5)
+            '.custom-p .p1, p .p1': pStyle(0),
+            '.custom-p .p2, p .p2': pStyle(1),
+            '.custom-p .p3, p .p3': pStyle(2),
+            '.custom-p .p4, p .p4': pStyle(3),
+            '.custom-p .p5, p .p5': pStyle(4),
+            '.custom-p .p6, p .p6': pStyle(5)
         }
     });
 });
@@ -165,7 +165,7 @@ define("@scom/scom-markdown-editor/editor/index.css.ts", ["require", "exports", 
     const pStyle = (level) => {
         return {
             fontSize: `${24 - (level * 2)}px`,
-            display: 'block'
+            fontWeight: 'normal'
         };
     };
     components_2.Styles.cssRule('i-scom-markdown-editor-config', {
@@ -201,20 +201,23 @@ define("@scom/scom-markdown-editor/editor/index.css.ts", ["require", "exports", 
                 flexWrap: 'wrap',
                 height: 'auto'
             },
+            '.toastui-editor-contents p': {
+                color: Theme.editor.fontColor
+            },
             '.toastui-editor-contents': {
-                color: '#222'
+                color: Theme.editor.fontColor
             },
             '.ProseMirror': {
-                color: '#222'
+                color: Theme.editor.fontColor
             },
             '.toastui-editor-mode-switch': {
                 background: 'transparent'
             },
-            '#mdEditor .toastui-editor-md-container': {
-                backgroundColor: 'var(--bg-container, transparent)'
+            '#wrapPnl .toastui-editor-md-container': {
+                backgroundColor: Theme.editor.background
             },
-            '#mdEditor .toastui-editor-ww-container': {
-                backgroundColor: 'var(--bg-container, transparent)'
+            '#wrapPnl .toastui-editor-ww-container': {
+                backgroundColor: Theme.editor.background
             },
             '.paragraph': {
                 fontSize: '1.125rem !important'
@@ -231,12 +234,12 @@ define("@scom/scom-markdown-editor/editor/index.css.ts", ["require", "exports", 
             '.p-item:hover': {
                 background: '#dff4ff'
             },
-            '.p1': pStyle(0),
-            '.p2': pStyle(1),
-            '.p3': pStyle(2),
-            '.p4': pStyle(3),
-            '.p5': pStyle(4),
-            '.p6': pStyle(5)
+            '.custom-p .p1, p .p1': pStyle(0),
+            '.custom-p .p2, p .p2': pStyle(1),
+            '.custom-p .p3, p .p3': pStyle(2),
+            '.custom-p .p4, p .p4': pStyle(3),
+            '.custom-p .p5, p .p5': pStyle(4),
+            '.custom-p .p6, p .p6': pStyle(5)
         }
     });
 });
@@ -251,6 +254,7 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
             this._data = '';
             this._theme = 'light';
             this.isStopped = false;
+            this.pLevel = 0;
             this.tag = {};
             this.onParagraphClicked = this.onParagraphClicked.bind(this);
         }
@@ -286,11 +290,11 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
             if (this.wrapPnl) {
                 const { backgroundColor, textColor, textAlign } = this.tag;
                 this.wrapPnl.style.textAlign = textAlign || "left";
-                this.wrapPnl.style.setProperty('--bg-container', backgroundColor || '');
+                this.style.setProperty('--editor-background', backgroundColor || '');
                 if (textColor)
-                    this.wrapPnl.style.setProperty('--text-primary', textColor);
+                    this.style.setProperty('--editor-font_color', textColor);
                 else
-                    this.wrapPnl.style.removeProperty('--text-primary');
+                    this.style.removeProperty('--editor-font_color');
             }
         }
         async renderEditor() {
@@ -306,6 +310,10 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
                 this.mdEditor.display = 'block';
                 this.pnlEditor.clearInnerHTML();
                 this.pnlEditor.appendChild(this.mdEditor);
+                // this.currentEditor.eventEmitter.listen('color', (data) => {
+                //   console.log(data)
+                //   console.log(this.pLevel)
+                // })
             }
             this.mdEditor.value = this._data;
             this.mdEditor.theme = this.theme;
@@ -313,7 +321,8 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
         }
         onParagraphClicked(level) {
             if (this.currentEditor) {
-                this.currentEditor.exec('paragraph', { level });
+                this.pLevel = level;
+                this.currentEditor.exec('customParagraph', { level });
                 this.currentEditor.eventEmitter.emit('closePopup');
             }
         }
@@ -322,32 +331,65 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
             this.createPDropdown(container);
             return {
                 markdownCommands: {
-                    paragraph: ({ level }, state, dispatch) => {
+                    customParagraph: ({ level }, state, dispatch) => {
                         const { tr, selection, doc, schema } = state;
-                        const index = selection.$head.path[1];
-                        const nodePos = selection.$head.path[2];
-                        const node = doc.child(index);
-                        if (!node)
-                            return false;
-                        const textContent = node.content.textBetween(nodePos, node.content.size, '\n');
+                        const fromPos = selection.$head.path[2];
+                        const pNode = selection.$head.path[1];
                         const openTag = `<span class="p${level + 1}">`;
                         const closeTag = `</span>`;
-                        const newContent = `${openTag}${textContent}${closeTag}`;
-                        tr.replaceWith(nodePos, nodePos + node.content.size, schema.text(newContent));
+                        let hasSet = false;
+                        let headingLength = 0;
+                        doc.descendants((node, pos) => {
+                            if (pos >= fromPos && pos <= fromPos + doc.child(pNode).nodeSize) {
+                                const isText = node.type.name === 'text';
+                                if (isText) {
+                                    const content = node.text || '';
+                                    if (/^\#+/g.test(content)) {
+                                        headingLength += node.nodeSize;
+                                        tr.delete(pos, pos + node.nodeSize);
+                                    }
+                                    else if ((/class=\"p[1-6]\"/g).test(content)) {
+                                        const newText = content.replace(/class=\"p[1-6]\"/g, `class="p${level + 1}"`);
+                                        tr.replaceWith(pos - headingLength, pos + node.nodeSize - headingLength, schema.text(newText));
+                                        hasSet = true;
+                                    }
+                                }
+                            }
+                        });
+                        const mainNode = doc.child(pNode);
+                        if (!mainNode)
+                            return false;
+                        if (!hasSet) {
+                            const textContent = mainNode.content.textBetween(0, mainNode.content.size, '\n').replace(/^\#+/g, '');
+                            const newContent = `${openTag}${textContent}${closeTag}`;
+                            tr.replaceWith(fromPos, fromPos + mainNode.content.size, schema.text(newContent));
+                        }
                         dispatch(tr);
                         return true;
                     }
                 },
                 wysiwygCommands: {
-                    paragraph: ({ level }, state, dispatch) => {
+                    customParagraph: ({ level }, state, dispatch) => {
                         const { tr, selection, doc, schema } = state;
-                        const pos = selection.$head.path[1];
+                        const nodeIndex = selection.$head.path[1];
                         const nodePos = selection.$head.path[2];
-                        const node = doc.child(pos);
+                        let node = doc.child(nodeIndex);
                         if (node) {
-                            const attrs = Object.assign(Object.assign({}, node.attrs), { htmlAttrs: { class: `p${level + 1}` } });
-                            const mark = schema.marks.span.create(attrs);
-                            tr.addMark(nodePos, nodePos + node.nodeSize, mark);
+                            const attrs = Object.assign(Object.assign({}, node.attrs), { htmlAttrs: { class: `p${level + 1}` }, classNames: [`p${level + 1}`] });
+                            const pNode = schema.nodes.paragraph.create(attrs, node.content, node.marks);
+                            tr.replaceWith(nodePos, nodePos + node.nodeSize, pNode);
+                            const pMark = schema.marks.span.create(attrs);
+                            tr.addMark(nodePos, nodePos + pNode.nodeSize, pMark);
+                            pNode.descendants((childNode, childPos) => {
+                                var _a;
+                                if (childNode.marks.length && childPos >= nodePos && childPos <= nodePos + pNode.nodeSize) {
+                                    for (let mark of childNode.marks) {
+                                        const htmlAttrs = Object.assign(Object.assign({}, (((_a = mark.attrs) === null || _a === void 0 ? void 0 : _a.htmlAttrs) || {})), { class: `p${level + 1}` });
+                                        const newMark = schema.marks.span.create(Object.assign(Object.assign({}, mark.attrs), { htmlAttrs }));
+                                        tr.addMark(childPos, childPos + childNode.nodeSize, newMark);
+                                    }
+                                }
+                            });
                             dispatch(tr);
                             return true;
                         }
@@ -373,11 +415,30 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
                     }
                 ],
                 toHTMLRenderers: {
+                    paragraph(node, context) {
+                        return context.entering
+                            ? { type: 'openTag', tagName: 'div', attributes: node.attrs, classNames: ['custom-p'], outerNewLine: true, innerNewLine: true }
+                            : { type: 'closeTag', tagName: 'div', outerNewLine: true, innerNewLine: true };
+                    },
                     htmlInline: {
                         span(node, { entering }) {
+                            var _a;
+                            let attributes = Object.assign({}, node.attrs);
+                            if (!attributes.class && node.literal !== '</span>') {
+                                const firstChild = ((_a = node.parent) === null || _a === void 0 ? void 0 : _a.firstChild) || null;
+                                let className = '';
+                                if (firstChild) {
+                                    const execData = (/^\<span class=\"(p[1-6])\"\>/g).exec(firstChild.literal || '');
+                                    className = execData ? execData[1] : '';
+                                    attributes.class = className;
+                                }
+                            }
+                            const classNames = attributes.classNames || [];
+                            if (attributes.class)
+                                classNames.push(attributes.class);
                             return entering
-                                ? { type: 'openTag', attributes: node.attrs, tagName: 'span', outerNewLine: true }
-                                : { type: 'closeTag', tagName: 'span', outerNewLine: true };
+                                ? { type: 'openTag', tagName: 'span', attributes, classNames }
+                                : { type: 'closeTag', tagName: 'span' };
                         }
                     }
                 }
@@ -530,11 +591,12 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             return (_a = this._theme) !== null && _a !== void 0 ? _a : 'light';
         }
         set theme(value) {
+            var _a;
             this._theme = value !== null && value !== void 0 ? value : 'light';
-            // if (this.pnlMarkdownEditor && !this.tag?.settingBgColor) {
-            //     this.tag.backgroundColor = this.getBackgroundColor();
-            //     this.pnlMarkdownEditor.background.color = this.tag.backgroundColor;
-            // }
+            if (this.pnlMarkdownEditor && !((_a = this.tag) === null || _a === void 0 ? void 0 : _a.settingBgColor)) {
+                this.tag.backgroundColor = this.getBackgroundColor();
+                this.style.setProperty('--editor-background', this.tag.backgroundColor);
+            }
             this.tag.textColor = this.getTextColor();
             this.updateColor(this.tag.textColor);
             if (this.mdViewer)
@@ -810,7 +872,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             const { width, height, backgroundColor, textAlign = 'left', textColor } = config;
             this.updateColor(textColor);
             if (this.pnlMarkdownEditor) {
-                // this.pnlMarkdownEditor.background.color = backgroundColor;
+                this.style.setProperty('--editor-background', backgroundColor);
                 this.pnlMarkdownEditor.style.textAlign = textAlign;
             }
             if (this.mdViewer) {
@@ -822,9 +884,9 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
         }
         updateColor(textColor) {
             if (textColor)
-                this.style.setProperty('--text-primary', textColor);
+                this.style.setProperty('--editor-font_color', textColor);
             else
-                this.style.removeProperty('--text-primary');
+                this.style.removeProperty('--editor-font_color');
         }
         getData() {
             return { content: this.data };
