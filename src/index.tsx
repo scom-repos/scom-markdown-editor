@@ -514,7 +514,7 @@ export default class ScomMarkdownEditor extends Module {
                     <i-label
                         caption="Click to edit text"
                         opacity={0.5}
-                        font={{color: '#222'}}
+                        font={{color: Theme.editor.fontColor}}
                         padding={{ top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' }}
                     ></i-label>
                 </i-panel>

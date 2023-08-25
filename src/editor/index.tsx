@@ -107,10 +107,6 @@ export default class Config extends Module {
       this.mdEditor.display = 'block'
       this.pnlEditor.clearInnerHTML()
       this.pnlEditor.appendChild(this.mdEditor)
-      // this.currentEditor.eventEmitter.listen('color', (data) => {
-      //   console.log(data)
-      //   console.log(this.pLevel)
-      // })
     }
     this.mdEditor.value = this._data
     this.mdEditor.theme = this.theme
@@ -128,6 +124,12 @@ export default class Config extends Module {
   private paragraphPlugin(context: any, options: any) {
     const container = document.createElement('div')
     this.createPDropdown(container)
+    context.eventEmitter.listen('command', (type: string, params: any) => {
+      if (type === 'color' && this.pLevel) {
+        this.currentEditor.exec('color', params)
+        this.currentEditor.exec('customParagraph', { level: this.pLevel })
+      }
+    })
     return {
       markdownCommands: {
         customParagraph: ({ level }, state: any, dispatch: any) => {
