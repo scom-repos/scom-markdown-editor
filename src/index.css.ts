@@ -7,8 +7,50 @@ const pStyle = (level: number) => {
         fontSize: `${24 - (level * 2)}px`,
         fontWeight: 'normal'
     }
+};
+const pSizeStyle = (level: number, size?: string) => {
+    switch (size) {
+        case 'xs':
+            return `font-size: ${20 - (level-1) * 2}px;`;
+        case 'sm':
+            return `font-size: ${22 - (level-1) * 2}px;`;
+        case 'md':
+            return `font-size: ${24 - (level-1) * 2}px;`;
+        case 'lg':
+            return `font-size: ${26 - (level-1) * 2}px;`;
+        case 'xl':
+            return `font-size: ${28 - (level-1) * 2}px;`;
+    }
 }
-
+let fontSizeStyle = '';
+['xs', 'sm', 'md','lg', 'xl'].forEach(size => {
+    [1,2,3,4,5,6].forEach(p => {
+        fontSizeStyle+=`.font-${size} .toastui-editor-contents .p${p} {
+            ${pSizeStyle(p, size)}
+        }\n`;
+    });
+    [1,2,3,4,5,6].forEach(p => {
+        fontSizeStyle+=`.i-page-section.font-${size} .toastui-editor-contents .p${p} {
+            ${pSizeStyle(p, size)}
+        }\n`;
+    });
+    fontSizeStyle+=`.font-${size} .toastui-editor-contents p {
+        ${pSizeStyle(6, size)}
+    }\n`;
+});
+['xs', 'sm', 'md','lg', 'xl'].forEach(size => {
+    [1,2,3,4,5,6].forEach(p => {
+        fontSizeStyle+=`.font-${size} .toastui-editor-contents h${p} {
+            ${pSizeStyle(p, size)}
+        }\n`;
+    });
+    [1,2,3,4,5,6].forEach(p => {
+        fontSizeStyle+=`.i-page-section.font-${size} .toastui-editor-contents h${p} {
+            ${pSizeStyle(p, size)}
+        }\n`;
+    });
+});
+Styles.cssRaw(fontSizeStyle);
 Styles.cssRule('i-scom-markdown-editor', {
     overflow: 'hidden',
     outline: 'none',
