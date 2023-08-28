@@ -88,12 +88,12 @@ export default class ScomMarkdownEditor extends Module {
     }
     set theme(value: ThemeType) {
         this._theme = value ?? 'light';
-        if (this.pnlMarkdownEditor && !this.tag?.settingBgColor) {
-            this.tag.backgroundColor = this.getBackgroundColor();
-            this.style.setProperty('--editor-background', this.tag.backgroundColor);
-        }
+        // if (this.pnlMarkdownEditor && !this.tag?.settingBgColor) {
+        //     this.tag.backgroundColor = this.getBackgroundColor();
+        // }
         this.tag.textColor = this.getTextColor();
-        this.updateColor(this.tag.textColor);
+        this.tag.backgroundColor = this.getBackgroundColor();
+        this.updateColor(this.tag.textColor, this.tag.backgroundColor);
         if (this.mdViewer) this.mdViewer.theme = this.theme;
         if (this.mdEditor) this.mdEditor.theme = this.theme;
     }
@@ -163,15 +163,7 @@ export default class ScomMarkdownEditor extends Module {
         const lazyLoad = this.getAttribute('lazyLoad', true, false);
         if (!lazyLoad) {
             const themeAttr = this.getAttribute('theme', true);
-            if (themeAttr) {
-                this.theme = themeAttr;
-                this.setTag({
-                    ...this.tag,
-                    settingBgColor: '',
-                    backgroundColor,
-                    textColor
-                });
-            }
+            if (themeAttr) this.theme = themeAttr;
             const data = this.getAttribute('data', true);
             if (data) this.data = data;
         }
@@ -359,9 +351,8 @@ export default class ScomMarkdownEditor extends Module {
     private updateMarkdown(config: any) {
         if (!config) return;
         const { width, height, backgroundColor, textAlign = 'left', textColor } = config;
-        this.updateColor(textColor);
+        this.updateColor(textColor, backgroundColor);
         if (this.pnlMarkdownEditor) {
-            this.style.setProperty('--editor-background', backgroundColor);
             this.pnlMarkdownEditor.style.textAlign = textAlign;
         }
         if (this.mdViewer) {
@@ -370,9 +361,11 @@ export default class ScomMarkdownEditor extends Module {
         }
     }
 
-    private updateColor(textColor: string) {
+    private updateColor(textColor: string, backgroundColor: string) {
         if (textColor) this.style.setProperty('--editor-font_color', textColor);
         else this.style.removeProperty('--editor-font_color');
+        if (backgroundColor) this.style.setProperty('--editor-background', backgroundColor);
+        else this.style.removeProperty('--editor-background');
     }
 
     private getData() {
@@ -406,8 +399,8 @@ export default class ScomMarkdownEditor extends Module {
                 if (prop === 'width' || prop === 'height') {
                     this.tag[prop] = typeof newValue[prop] === 'string' ? newValue[prop] : `${newValue[prop]}px`;
                 } else if (prop === 'backgroundColor') {
-                    this.tag.backgroundColor = newValue?.settingBgColor || this.getBackgroundColor();
-                    // this.tag.backgroundColor = newValue.backgroundColor || newValue?.settingBgColor || this.getBackgroundColor();
+                    // this.tag.backgroundColor = newValue?.settingBgColor || this.getBackgroundColor();
+                    this.tag.backgroundColor = newValue.backgroundColor || this.getBackgroundColor();
                 } else if (prop === 'textColor') {
                     const isNew = newValue?.textColor && newValue.textColor !== this.tag.textColor;
                     this.tag.textColor = isNew ? newValue.textColor : this.getTextColor();
@@ -501,7 +494,7 @@ export default class ScomMarkdownEditor extends Module {
 
     render() {
         return (
-            <i-vstack id="pnlMarkdownEditor">
+            <i-vstack id="pnlMarkdownEditor" background={{color: Theme.editor.background}}>
                 <i-markdown-editor
                     id="mdViewer"
                     viewer={true}

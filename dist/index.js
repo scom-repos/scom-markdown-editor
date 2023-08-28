@@ -593,14 +593,13 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             return (_a = this._theme) !== null && _a !== void 0 ? _a : 'light';
         }
         set theme(value) {
-            var _a;
             this._theme = value !== null && value !== void 0 ? value : 'light';
-            if (this.pnlMarkdownEditor && !((_a = this.tag) === null || _a === void 0 ? void 0 : _a.settingBgColor)) {
-                this.tag.backgroundColor = this.getBackgroundColor();
-                this.style.setProperty('--editor-background', this.tag.backgroundColor);
-            }
+            // if (this.pnlMarkdownEditor && !this.tag?.settingBgColor) {
+            //     this.tag.backgroundColor = this.getBackgroundColor();
+            // }
             this.tag.textColor = this.getTextColor();
-            this.updateColor(this.tag.textColor);
+            this.tag.backgroundColor = this.getBackgroundColor();
+            this.updateColor(this.tag.textColor, this.tag.backgroundColor);
             if (this.mdViewer)
                 this.mdViewer.theme = this.theme;
             if (this.mdEditor)
@@ -669,11 +668,8 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             const lazyLoad = this.getAttribute('lazyLoad', true, false);
             if (!lazyLoad) {
                 const themeAttr = this.getAttribute('theme', true);
-                if (themeAttr) {
+                if (themeAttr)
                     this.theme = themeAttr;
-                    this.setTag(Object.assign(Object.assign({}, this.tag), { settingBgColor: '', backgroundColor,
-                        textColor }));
-                }
                 const data = this.getAttribute('data', true);
                 if (data)
                     this.data = data;
@@ -872,9 +868,8 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             if (!config)
                 return;
             const { width, height, backgroundColor, textAlign = 'left', textColor } = config;
-            this.updateColor(textColor);
+            this.updateColor(textColor, backgroundColor);
             if (this.pnlMarkdownEditor) {
-                this.style.setProperty('--editor-background', backgroundColor);
                 this.pnlMarkdownEditor.style.textAlign = textAlign;
             }
             if (this.mdViewer) {
@@ -884,11 +879,15 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                     this.mdViewer.height = 'auto'; // height;
             }
         }
-        updateColor(textColor) {
+        updateColor(textColor, backgroundColor) {
             if (textColor)
                 this.style.setProperty('--editor-font_color', textColor);
             else
                 this.style.removeProperty('--editor-font_color');
+            if (backgroundColor)
+                this.style.setProperty('--editor-background', backgroundColor);
+            else
+                this.style.removeProperty('--editor-background');
         }
         getData() {
             return { content: this.data };
@@ -918,8 +917,8 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                         this.tag[prop] = typeof newValue[prop] === 'string' ? newValue[prop] : `${newValue[prop]}px`;
                     }
                     else if (prop === 'backgroundColor') {
-                        this.tag.backgroundColor = (newValue === null || newValue === void 0 ? void 0 : newValue.settingBgColor) || this.getBackgroundColor();
-                        // this.tag.backgroundColor = newValue.backgroundColor || newValue?.settingBgColor || this.getBackgroundColor();
+                        // this.tag.backgroundColor = newValue?.settingBgColor || this.getBackgroundColor();
+                        this.tag.backgroundColor = newValue.backgroundColor || this.getBackgroundColor();
                     }
                     else if (prop === 'textColor') {
                         const isNew = (newValue === null || newValue === void 0 ? void 0 : newValue.textColor) && newValue.textColor !== this.tag.textColor;
@@ -1012,7 +1011,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             return themeSchema;
         }
         render() {
-            return (this.$render("i-vstack", { id: "pnlMarkdownEditor" },
+            return (this.$render("i-vstack", { id: "pnlMarkdownEditor", background: { color: Theme.editor.background } },
                 this.$render("i-markdown-editor", { id: "mdViewer", viewer: true, value: this.data, width: '100%', height: 'auto', visible: false }),
                 this.$render("i-panel", { id: "pnlEmpty" },
                     this.$render("i-label", { caption: "Click to edit text", opacity: 0.5, font: { color: Theme.editor.fontColor }, padding: { top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' } })),
