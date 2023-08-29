@@ -87,10 +87,14 @@ export default class Config extends Module {
     if (this.wrapPnl) {
       const { backgroundColor, textColor, textAlign } = this.tag;
       this.wrapPnl.style.textAlign = textAlign || "left";
-      this.style.setProperty('--editor-background', backgroundColor || '');
+      if (backgroundColor)
+        this.style.setProperty('--custom-background-color', backgroundColor || '')
+      else 
+        this.style.removeProperty('--custom-background-color');
       if (textColor)
-        this.style.setProperty('--editor-font_color', textColor);
-      else this.style.removeProperty('--editor-font_color');
+        this.style.setProperty('--custom-text-color', textColor);
+      else 
+        this.style.removeProperty('--custom-text-color');
     }
   }
 

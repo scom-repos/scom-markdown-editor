@@ -83,7 +83,7 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
             //     content: "none",
             // },
             '.toastui-editor-contents p': {
-                color: Theme.editor.fontColor
+                color: `var(--custom-text-color, var(--text-primary))`
             },
             '#pnlEditorWrap': {
                 $nest: {
@@ -105,10 +105,10 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
                         background: 'transparent'
                     },
                     ".toastui-editor-md-container": {
-                        backgroundColor: Theme.editor.background
+                        backgroundColor: `var(--custom-background-color, var(--background-main))`
                     },
                     ".toastui-editor-ww-container": {
-                        backgroundColor: Theme.editor.background
+                        backgroundColor: `var(--custom-background-color, var(--background-main))`
                     },
                     '.toastui-editor-contents': {
                         transition: 'all 125ms cubic-bezier(0.4,0,0.2,1)'
@@ -245,22 +245,22 @@ define("@scom/scom-markdown-editor/editor/index.css.ts", ["require", "exports", 
                 height: 'auto'
             },
             '.toastui-editor-contents p': {
-                color: Theme.editor.fontColor
+                color: `var(--custom-text-color, var(--text-primary))`
             },
             '.toastui-editor-contents': {
-                color: Theme.editor.fontColor
+                color: `var(--custom-text-color, var(--text-primary))`
             },
             '.ProseMirror': {
-                color: Theme.editor.fontColor
+                color: `var(--custom-text-color, var(--text-primary))`
             },
             '.toastui-editor-mode-switch': {
                 background: 'transparent'
             },
             '#wrapPnl .toastui-editor-md-container': {
-                backgroundColor: Theme.editor.background
+                backgroundColor: `var(--custom-background-color, var(--background-main))`
             },
             '#wrapPnl .toastui-editor-ww-container': {
-                backgroundColor: Theme.editor.background
+                backgroundColor: `var(--custom-background-color, var(--background-main))`
             },
             '.paragraph': {
                 fontSize: '1.125rem !important'
@@ -333,11 +333,14 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
             if (this.wrapPnl) {
                 const { backgroundColor, textColor, textAlign } = this.tag;
                 this.wrapPnl.style.textAlign = textAlign || "left";
-                this.style.setProperty('--editor-background', backgroundColor || '');
-                if (textColor)
-                    this.style.setProperty('--editor-font_color', textColor);
+                if (backgroundColor)
+                    this.style.setProperty('--custom-background-color', backgroundColor || '');
                 else
-                    this.style.removeProperty('--editor-font_color');
+                    this.style.removeProperty('--custom-background-color');
+                if (textColor)
+                    this.style.setProperty('--custom-text-color', textColor);
+                else
+                    this.style.removeProperty('--custom-text-color');
             }
         }
         async renderEditor() {
@@ -637,12 +640,9 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
         }
         set theme(value) {
             this._theme = value !== null && value !== void 0 ? value : 'light';
-            // if (this.pnlMarkdownEditor && !this.tag?.settingBgColor) {
-            //     this.tag.backgroundColor = this.getBackgroundColor();
-            // }
-            this.tag.textColor = this.getTextColor();
-            this.tag.backgroundColor = this.getBackgroundColor();
-            this.updateColor(this.tag.textColor, this.tag.backgroundColor);
+            // this.tag.textColor = this.getTextColor();
+            // this.tag.backgroundColor = this.getBackgroundColor();
+            // this.updateColor(this.tag.textColor, this.tag.backgroundColor);
             if (this.mdViewer)
                 this.mdViewer.theme = this.theme;
             if (this.mdEditor)
@@ -923,14 +923,14 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             }
         }
         updateColor(textColor, backgroundColor) {
-            if (textColor)
-                this.style.setProperty('--editor-font_color', textColor);
-            else
-                this.style.removeProperty('--editor-font_color');
-            if (backgroundColor)
-                this.style.setProperty('--editor-background', backgroundColor);
-            else
-                this.style.removeProperty('--editor-background');
+            // if (textColor) 
+            //     this.style.setProperty('--custom-text-color', textColor);
+            // else 
+            //     this.style.removeProperty('--custom-text-color');
+            // if (backgroundColor) 
+            //     this.style.setProperty('--custom-background-color', backgroundColor);
+            // else 
+            //     this.style.removeProperty('--custom-background-color');
         }
         getData() {
             return { content: this.data };
@@ -1054,10 +1054,10 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             return themeSchema;
         }
         render() {
-            return (this.$render("i-vstack", { id: "pnlMarkdownEditor", background: { color: Theme.editor.background } },
+            return (this.$render("i-vstack", { id: "pnlMarkdownEditor" },
                 this.$render("i-markdown-editor", { id: "mdViewer", viewer: true, value: this.data, width: '100%', height: 'auto', visible: false }),
                 this.$render("i-panel", { id: "pnlEmpty" },
-                    this.$render("i-label", { caption: "Click to edit text", opacity: 0.5, font: { color: Theme.editor.fontColor }, padding: { top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' } })),
+                    this.$render("i-label", { caption: "Click to edit text", opacity: 0.5, padding: { top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' } })),
                 this.$render("i-panel", { id: "pnlEditorWrap" })));
         }
     };

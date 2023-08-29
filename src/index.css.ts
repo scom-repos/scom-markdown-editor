@@ -77,7 +77,7 @@ Styles.cssRule('i-scom-markdown-editor', {
         //     content: "none",
         // },
         '.toastui-editor-contents p': {
-            color: Theme.editor.fontColor
+            color: `var(--custom-text-color, var(--text-primary))`
         },
         '#pnlEditorWrap': {
             $nest: {
@@ -99,10 +99,10 @@ Styles.cssRule('i-scom-markdown-editor', {
                     background: 'transparent'
                 },
                 ".toastui-editor-md-container": {
-                    backgroundColor: Theme.editor.background
+                    backgroundColor: `var(--custom-background-color, var(--background-main))`
                 },
                 ".toastui-editor-ww-container": {
-                    backgroundColor: Theme.editor.background
+                    backgroundColor: `var(--custom-background-color, var(--background-main))`
                 },
                 '.toastui-editor-contents': {
                     transition: 'all 125ms cubic-bezier(0.4,0,0.2,1)'

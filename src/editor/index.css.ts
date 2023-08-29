@@ -51,22 +51,22 @@ Styles.cssRule('i-scom-markdown-editor-config', {
       height: 'auto'
     },
     '.toastui-editor-contents p': {
-      color: Theme.editor.fontColor
+      color: `var(--custom-text-color, var(--text-primary))`
     },
     '.toastui-editor-contents': {
-      color: Theme.editor.fontColor
+      color: `var(--custom-text-color, var(--text-primary))`
     },
     '.ProseMirror': {
-      color: Theme.editor.fontColor
+      color: `var(--custom-text-color, var(--text-primary))`
     },
     '.toastui-editor-mode-switch': {
       background: 'transparent'
     },
     '#wrapPnl .toastui-editor-md-container': {
-      backgroundColor: Theme.editor.background
+      backgroundColor: `var(--custom-background-color, var(--background-main))`
     },
     '#wrapPnl .toastui-editor-ww-container': {
-      backgroundColor: Theme.editor.background
+      backgroundColor: `var(--custom-background-color, var(--background-main))`
     },
     '.paragraph': {
       fontSize: '1.125rem !important'

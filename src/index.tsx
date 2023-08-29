@@ -88,12 +88,9 @@ export default class ScomMarkdownEditor extends Module {
     }
     set theme(value: ThemeType) {
         this._theme = value ?? 'light';
-        // if (this.pnlMarkdownEditor && !this.tag?.settingBgColor) {
-        //     this.tag.backgroundColor = this.getBackgroundColor();
-        // }
-        this.tag.textColor = this.getTextColor();
-        this.tag.backgroundColor = this.getBackgroundColor();
-        this.updateColor(this.tag.textColor, this.tag.backgroundColor);
+        // this.tag.textColor = this.getTextColor();
+        // this.tag.backgroundColor = this.getBackgroundColor();
+        // this.updateColor(this.tag.textColor, this.tag.backgroundColor);
         if (this.mdViewer) this.mdViewer.theme = this.theme;
         if (this.mdEditor) this.mdEditor.theme = this.theme;
     }
@@ -362,10 +359,14 @@ export default class ScomMarkdownEditor extends Module {
     }
 
     private updateColor(textColor: string, backgroundColor: string) {
-        if (textColor) this.style.setProperty('--editor-font_color', textColor);
-        else this.style.removeProperty('--editor-font_color');
-        if (backgroundColor) this.style.setProperty('--editor-background', backgroundColor);
-        else this.style.removeProperty('--editor-background');
+        // if (textColor) 
+        //     this.style.setProperty('--custom-text-color', textColor);
+        // else 
+        //     this.style.removeProperty('--custom-text-color');
+        // if (backgroundColor) 
+        //     this.style.setProperty('--custom-background-color', backgroundColor);
+        // else 
+        //     this.style.removeProperty('--custom-background-color');
     }
 
     private getData() {
@@ -494,7 +495,7 @@ export default class ScomMarkdownEditor extends Module {
 
     render() {
         return (
-            <i-vstack id="pnlMarkdownEditor" background={{color: Theme.editor.background}}>
+            <i-vstack id="pnlMarkdownEditor">
                 <i-markdown-editor
                     id="mdViewer"
                     viewer={true}
@@ -507,7 +508,6 @@ export default class ScomMarkdownEditor extends Module {
                     <i-label
                         caption="Click to edit text"
                         opacity={0.5}
-                        font={{color: Theme.editor.fontColor}}
                         padding={{ top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' }}
                     ></i-label>
                 </i-panel>
