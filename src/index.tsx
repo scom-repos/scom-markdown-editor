@@ -58,14 +58,12 @@ export default class ScomMarkdownEditor extends Module {
 
     private _data: string;
     private _theme: ThemeType = 'light';
-    private selectionTimer: any = null;
     private commandHistory: any = null;
     private builder: any;
 
     constructor(parent?: Container, options?: any) {
         super(parent, options);
         if (scconfig) setDataFromSCConfig(scconfig);
-        this.onSelectionHandler = this.onSelectionHandler.bind(this);
         this.onBlurHandler = this.onBlurHandler.bind(this);
     }
 
@@ -104,8 +102,8 @@ export default class ScomMarkdownEditor extends Module {
     private getBackgroundColor() {
         let backgroundColor = '';
         if (this._rootParent) {
-            // const rowStyles = window.getComputedStyle(this._rootParent, null);
-            backgroundColor = this._rootParent.background.color // || rowStyles?.backgroundColor;
+            const rowStyles = window.getComputedStyle(this._rootParent, null);
+            backgroundColor = rowStyles?.backgroundColor;
         }
         return backgroundColor || this.getDefaultThemeColor();
     }
@@ -114,7 +112,7 @@ export default class ScomMarkdownEditor extends Module {
         let textColor = '';
         if (this._rootParent) {
             const rowStyles = window.getComputedStyle(this._rootParent, null);
-            textColor = this._rootParent.font.color || rowStyles?.color;
+            textColor = rowStyles?.color;
         }
         return textColor || this.getDefaultTextColor();
     }
@@ -164,13 +162,10 @@ export default class ScomMarkdownEditor extends Module {
             const data = this.getAttribute('data', true);
             if (data) this.data = data;
         }
-        const builder = this.closest('i-scom-page-builder');
-        // this.setAttribute('draggable', 'false');
-        // this.setAttribute('contenteditable', 'false');
+        const builder = this.closest('i-scom-page-builder');;
         if (builder) {
             await this.renderEditor();
             this.addEventListener('blur', this.onBlurHandler);
-            // document.addEventListener('selectionchange', this.onSelectionHandler);
             this.mdViewer.addEventListener("selectstart", () => {
                 this.setAttribute('contenteditable', 'false');
                 if (builder) this.onToggleEditor(true);
@@ -199,58 +194,10 @@ export default class ScomMarkdownEditor extends Module {
 
     onHide(): void {
         this.removeEventListener('blur', this.onBlurHandler);
-        // document.removeEventListener('selectionchange', this.onSelectionHandler);
-    }
-
-    private onSelectionHandler(event: Event) {
-        event.preventDefault();
-        event.stopPropagation();
-        const selection = document.getSelection();
-        const range = selection.rangeCount > 0 && selection.getRangeAt(0);
-        if (!range) return;
-        const nearestContainer = range.commonAncestorContainer.TEXT_NODE ? range.commonAncestorContainer.parentElement : range.commonAncestorContainer;
-        const parentBuilder = nearestContainer.parentElement?.closest('i-scom-page-builder')
-        if (!parentBuilder) return;
-        const parentEditor = nearestContainer.parentElement?.closest('#mdEditor');
-        const editor = nearestContainer.parentElement?.closest('i-scom-markdown-editor');
-        const isDragging = parentEditor?.closest('ide-toolbar')?.classList.contains('to-be-dropped');
-        if (!selection.toString() && !editor) {
-            this.resetEditors();
-            return;
-        }
-        if (parentEditor || isDragging || !selection.toString()) return;
-
-        if (this.selectionTimer) clearTimeout(this.selectionTimer);
-        this.selectionTimer = setTimeout(() => {
-            const selection = document.getSelection();
-            this.resetEditors();
-            if (selection && selection.rangeCount > 0) {
-                const range = selection.getRangeAt(0);
-                const commonAncestorContainer = range.commonAncestorContainer;
-                const nearestContainer = commonAncestorContainer.TEXT_NODE ? commonAncestorContainer.parentElement : commonAncestorContainer as HTMLElement;
-                const startContainer = range.startContainer.parentElement.closest('i-scom-markdown-editor');
-                const endContainer = range.endContainer.parentElement.closest('i-scom-markdown-editor');
-                const nearestEditor = nearestContainer && nearestContainer.closest('i-scom-markdown-editor');
-                const parentEditor = (nearestEditor || startContainer || endContainer) as ScomMarkdownEditor;
-                if (parentEditor) {
-                    const isDragging = parentEditor?.closest('ide-toolbar')?.classList.contains('to-be-dropped');
-                    if (parentEditor && !isDragging) {
-                        parentEditor.onToggleEditor(true);
-                    }
-                }
-            }
-        }, 500)
     }
 
     private onBlurHandler(event: Event) {
         this.onToggleEditor(false)
-    }
-
-    private resetEditors() {
-        const editors = document.querySelectorAll('i-scom-markdown-editor');
-        for (let editor of editors) {
-            (editor as ScomMarkdownEditor).onToggleEditor(false);
-        }
     }
 
     private _getActions(themeSchema?: IDataSchema) {

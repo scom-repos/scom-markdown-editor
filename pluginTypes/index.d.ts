@@ -52,7 +52,7 @@ declare module "@scom/scom-markdown-editor/editor/index.tsx" {
         private _data;
         private _theme;
         private isStopped;
-        private pLevel;
+        private levelMapper;
         tag: any;
         constructor(parent?: Container, options?: any);
         get content(): string;
@@ -108,7 +108,6 @@ declare module "@scom/scom-markdown-editor" {
         defaultEdit: boolean;
         private _data;
         private _theme;
-        private selectionTimer;
         private commandHistory;
         private builder;
         constructor(parent?: Container, options?: any);
@@ -126,9 +125,7 @@ declare module "@scom/scom-markdown-editor" {
         init(): Promise<void>;
         private renderEditor;
         onHide(): void;
-        private onSelectionHandler;
         private onBlurHandler;
-        private resetEditors;
         private _getActions;
         private updateMarkdown;
         private updateColor;
