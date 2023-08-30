@@ -85,13 +85,13 @@ export default class Config extends Module {
 
   private updateMardown() {
     if (this.wrapPnl) {
-      const { backgroundColor, textColor, textAlign } = this.tag;
+      const { backgroundColor, customBackgroundColor, textColor, customTextColor, textAlign } = this.tag;
       this.wrapPnl.style.textAlign = textAlign || "left";
-      if (backgroundColor)
+      if (backgroundColor && customBackgroundColor)
         this.style.setProperty('--custom-background-color', backgroundColor || '')
       else 
         this.style.removeProperty('--custom-background-color');
-      if (textColor)
+      if (textColor && customTextColor)
         this.style.setProperty('--custom-text-color', textColor);
       else 
         this.style.removeProperty('--custom-text-color');
