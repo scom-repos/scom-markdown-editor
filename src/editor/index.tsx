@@ -45,7 +45,7 @@ export default class Config extends Module {
   private _data: string = ''
   private _theme: ThemeType = 'light'
   private isStopped: boolean = false
-  private pLevel: number = 0
+  private levelMapper: {[key: number]: number} = {}
   tag: any = {};
 
   constructor(parent?: Container, options?: any) {
@@ -119,7 +119,6 @@ export default class Config extends Module {
 
   private onParagraphClicked(level: number) {
     if (this.currentEditor) {
-      this.pLevel = level
       this.currentEditor.exec('customParagraph', { level })
       this.currentEditor.eventEmitter.emit('closePopup')
     }
@@ -128,15 +127,17 @@ export default class Config extends Module {
   private paragraphPlugin(context: any, options: any) {
     const container = document.createElement('div')
     this.createPDropdown(container)
-    context.eventEmitter.listen('command', (type: string, params: any) => {
-      if (type === 'color' && this.pLevel) {
+    context.eventEmitter.listen('command', (type: string, params: any, options: any) => {
+      if (type === 'color') {
+        console.log('set colors', params)
         this.currentEditor.exec('color', params)
-        this.currentEditor.exec('customParagraph', { level: this.pLevel })
+        this.currentEditor.exec('customParagraph', { level: -1 })
       }
     })
     return {
       markdownCommands: {
         customParagraph: ({ level }, state: any, dispatch: any) => {
+          if (level === -1) return false
           const { tr, selection, doc, schema } = state
           const fromPos = selection.$head.path[2]
           const pNode = selection.$head.path[1]
@@ -176,19 +177,23 @@ export default class Config extends Module {
           const { tr, selection, doc, schema } = state
           const nodeIndex = selection.$head.path[1]
           const nodePos = selection.$head.path[2]
+          const currentLevel = level !== -1 ? level : this.levelMapper[nodeIndex]
+          if (currentLevel === undefined || currentLevel === -1) return false
+          this.levelMapper[nodeIndex] = level
           let node = doc.child(nodeIndex)
           if (node) {
-            const attrs = { ...node.attrs, htmlAttrs: {class: `p${level + 1}`}, classNames: [`p${level + 1}`] }
+            const attrs = { ...node.attrs, htmlAttrs: {class: `p${currentLevel + 1}`} }
             const pNode = schema.nodes.paragraph.create(attrs, node.content, node.marks)
             tr.replaceWith(nodePos, nodePos + node.nodeSize, pNode)
             const pMark = schema.marks.span.create(attrs)
             tr.addMark(nodePos, nodePos + pNode.nodeSize, pMark)
-            pNode.descendants((childNode: any, childPos: number) => {
-              if (childNode.marks.length && childPos >= nodePos && childPos <= nodePos + pNode.nodeSize) {
+            node = doc.child(nodeIndex)
+            node.descendants((childNode: any, childPos: number) => {
+              if (childNode.marks.length) {
                 for (let mark of childNode.marks) {
-                  const htmlAttrs = {...(mark.attrs?.htmlAttrs || {}), class: `p${level + 1}`}
+                  const htmlAttrs = {...(mark.attrs?.htmlAttrs || {}), class: `p${currentLevel + 1}`}
                   const newMark = schema.marks.span.create({...mark.attrs, htmlAttrs})
-                  tr.addMark(childPos, childPos + childNode.nodeSize, newMark)
+                  tr.addMark(nodePos + childPos + 1, nodePos + childPos + childNode.nodeSize + 1, newMark)
                 }
               }
             })

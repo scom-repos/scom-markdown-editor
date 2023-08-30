@@ -114,6 +114,9 @@ Styles.cssRule('i-scom-markdown-editor', {
         '.custom-p .p3, p .p3': pStyle(2),
         '.custom-p .p4, p .p4': pStyle(3),
         '.custom-p .p5, p .p5': pStyle(4),
-        '.custom-p .p6, p .p6': pStyle(5)
+        '.custom-p .p6, p .p6': pStyle(5),
+        '.custom-p strong *, p strong *': {
+            fontWeight: 'bold !important'
+        }
     }
 });
