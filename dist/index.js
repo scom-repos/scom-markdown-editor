@@ -665,7 +665,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
         setRootParent(parent) {
             this._rootParent = parent;
             const newTag = Object.assign(Object.assign({}, this.tag), { backgroundColor: this.getBackgroundColor() });
-            this.setTag(newTag);
+            this.setTag(newTag, true);
         }
         getBackgroundColor() {
             let backgroundColor = '';

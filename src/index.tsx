@@ -97,7 +97,7 @@ export default class ScomMarkdownEditor extends Module {
     private setRootParent(parent: Control) {
         this._rootParent = parent;
         const newTag = {...this.tag, backgroundColor: this.getBackgroundColor()};
-        this.setTag(newTag);
+        this.setTag(newTag, true);
     }
 
     private getBackgroundColor() {
