@@ -77,7 +77,7 @@ declare module "@scom/scom-markdown-editor/editor/index.tsx" {
 }
 /// <amd-module name="@scom/scom-markdown-editor" />
 declare module "@scom/scom-markdown-editor" {
-    import { Module, VStack, Container, ControlElement, IDataSchema } from '@ijstech/components';
+    import { Module, VStack, Container, ControlElement, IDataSchema, IUISchema } from '@ijstech/components';
     import "@scom/scom-markdown-editor/index.css.ts";
     export interface IConfigData {
         width?: string;
@@ -127,8 +127,9 @@ declare module "@scom/scom-markdown-editor" {
         onHide(): void;
         private onBlurHandler;
         private _getActions;
+        private resetStyles;
         private updateMarkdown;
-        private updateColor;
+        private renderSettings;
         private getData;
         private toggleEmpty;
         private setData;
@@ -151,18 +152,18 @@ declare module "@scom/scom-markdown-editor" {
                 customUI: {
                     render: (data?: any, onConfirm?: (result: boolean, data: any) => void) => VStack;
                 };
-                visible?: undefined;
                 userInputDataSchema?: undefined;
+                userInputUISchema?: undefined;
             } | {
                 name: string;
                 icon: string;
-                visible: () => boolean;
                 command: (builder: any, userInputData: any) => {
                     execute: () => Promise<void>;
                     undo: () => void;
                     redo: () => void;
                 };
                 userInputDataSchema: IDataSchema;
+                userInputUISchema: IUISchema;
                 customUI?: undefined;
             })[];
             getData: any;

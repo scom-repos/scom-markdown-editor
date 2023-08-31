@@ -37,6 +37,9 @@ let fontSizeStyle = '';
     fontSizeStyle+=`.font-${size} .toastui-editor-contents p {
         ${pSizeStyle(6, size)}
     }\n`;
+    fontSizeStyle+=`i-scom-markdown-editor.font-${size} .toastui-editor-contents p {
+        ${pSizeStyle(6, size)}
+    }\n`;
 });
 ['xs', 'sm', 'md','lg', 'xl'].forEach(size => {
     [1,2,3,4,5,6].forEach(p => {
@@ -50,6 +53,7 @@ let fontSizeStyle = '';
         }\n`;
     });
 });
+
 Styles.cssRaw(fontSizeStyle);
 Styles.cssRule('i-scom-markdown-editor', {
     overflow: 'hidden',

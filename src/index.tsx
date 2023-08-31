@@ -11,7 +11,8 @@ import {
     IDataSchema,
     Control,
     HStack,
-    MarkdownEditor
+    MarkdownEditor,
+    IUISchema
 } from '@ijstech/components';
 import './index.css';
 import { setDataFromSCConfig } from './store';
@@ -88,7 +89,7 @@ export default class ScomMarkdownEditor extends Module {
         this._theme = value ?? 'light';
         // this.tag.textColor = this.getTextColor();
         // this.tag.backgroundColor = this.getBackgroundColor();
-        // this.updateColor(this.tag.textColor, this.tag.backgroundColor);
+        // this.renderSettings(this.tag.textColor, this.tag.backgroundColor);
         if (this.mdViewer) this.mdViewer.theme = this.theme;
         if (this.mdEditor) this.mdEditor.theme = this.theme;
     }
@@ -200,7 +201,8 @@ export default class ScomMarkdownEditor extends Module {
         this.onToggleEditor(false)
     }
 
-    private _getActions(themeSchema?: IDataSchema) {
+    private _getActions() {
+        const { dataSchema, jsonUISchema } = this.getThemeSchema()
         const actions = [
             {
                 name: 'Edit',
@@ -257,23 +259,18 @@ export default class ScomMarkdownEditor extends Module {
             {
                 name: 'Theme Settings',
                 icon: 'palette',
-                visible: () => themeSchema != null && themeSchema != undefined,
                 command: (builder: any, userInputData: any) => {
                     let oldTag: any = {};
                     return {
                         execute: async () => {
                             if (!userInputData) return;
                             oldTag = JSON.parse(JSON.stringify(this.tag));
+                            userInputData = userInputData || {}
                             if (userInputData.backgroundColor) {
                                 this.tag.backgroundColor = userInputData.backgroundColor;
                                 this.tag.settingBgColor = userInputData.backgroundColor
                             }
-                            if (userInputData.width)
-                                this.tag.width = userInputData.width;
-                            if (userInputData.height)
-                                this.tag.height = userInputData.height;
-                            if (userInputData.textAlign)
-                                this.tag.textAlign = userInputData.textAlign;
+                            this.tag = {...this.tag, ...userInputData};
                             if (builder) builder.setTag(this.tag);
                             else this.setTag(this.tag);
                         },
@@ -286,16 +283,30 @@ export default class ScomMarkdownEditor extends Module {
                         redo: () => { }
                     }
                 },
-                userInputDataSchema: themeSchema
+                userInputDataSchema: dataSchema,
+                userInputUISchema: jsonUISchema,
             }
         ];
         return actions;
     }
 
+    private resetStyles() {
+        this.tag.textColor = this.getTextColor();
+        this.tag.backgroundColor = this.getBackgroundColor();
+        for (let i = this.classList.length - 1; i >= 0; i--) {
+            const className = this.classList[i];
+            if (className.startsWith('font-')) {
+                this.classList.remove(className);
+            }
+        }
+        this.style.removeProperty('--custom-text-color');
+        this.style.removeProperty('--custom-background-color');
+    }
+
     private updateMarkdown(config: any) {
         if (!config) return;
-        const { width, height, backgroundColor, textAlign = 'left', textColor } = config;
-        this.updateColor(textColor, backgroundColor);
+        const { width, height, textAlign = 'left' } = config;
+        this.renderSettings();
         if (this.pnlMarkdownEditor) {
             this.pnlMarkdownEditor.style.textAlign = textAlign;
         }
@@ -305,15 +316,24 @@ export default class ScomMarkdownEditor extends Module {
         }
     }
 
-    private updateColor(textColor: string, backgroundColor: string) {
-        // if (textColor) 
-        //     this.style.setProperty('--custom-text-color', textColor);
-        // else 
-        //     this.style.removeProperty('--custom-text-color');
-        // if (backgroundColor) 
-        //     this.style.setProperty('--custom-background-color', backgroundColor);
-        // else 
-        //     this.style.removeProperty('--custom-background-color');
+    private renderSettings() {
+        const { customBackgroundColor, backgroundColor, customTextColor, textColor, customTextSize, textSize } = this.tag || {};
+        for (let i = this.classList.length - 1; i >= 0; i--) {
+            const className = this.classList[i];
+            if (className.startsWith('font-')) {
+                this.classList.remove(className);
+            }
+        }
+        if (customTextColor && textColor) 
+            this.style.setProperty('--custom-text-color', textColor);
+        else
+            this.style.removeProperty('--custom-text-color');
+        if (customBackgroundColor && backgroundColor) 
+            this.style.setProperty('--custom-background-color', backgroundColor);
+        else 
+            this.style.removeProperty('--custom-background-color');
+        if (customTextSize && textSize)
+            this.classList.add(`font-${textSize}`)
     }
 
     private getData() {
@@ -340,18 +360,21 @@ export default class ScomMarkdownEditor extends Module {
         return this.tag;
     }
 
-    private async setTag(value: any) {
+    private async setTag(value: any, fromParent?: boolean) {
+        if (fromParent) {
+            this.resetStyles();
+            return;
+        }
         const newValue = value || {};
         for (let prop in newValue) {
             if (newValue.hasOwnProperty(prop)) {
                 if (prop === 'width' || prop === 'height') {
                     this.tag[prop] = typeof newValue[prop] === 'string' ? newValue[prop] : `${newValue[prop]}px`;
-                } else if (prop === 'backgroundColor') {
-                    // this.tag.backgroundColor = newValue?.settingBgColor || this.getBackgroundColor();
+                }
+                else if (prop === 'backgroundColor') {
                     this.tag.backgroundColor = newValue.backgroundColor || this.getBackgroundColor();
                 } else if (prop === 'textColor') {
-                    const isNew = newValue?.textColor && newValue.textColor !== this.tag.textColor;
-                    this.tag.textColor = isNew ? newValue.textColor : this.getTextColor();
+                    this.tag.textColor = newValue.textColor || this.getTextColor();
                 }
                 else this.tag[prop] = newValue[prop];
             }
@@ -395,8 +418,7 @@ export default class ScomMarkdownEditor extends Module {
                 name: 'Builder Configurator',
                 target: 'Builders',
                 getActions: () => {
-                    const themeSchema = this.getThemeSchema();
-                    return this._getActions(themeSchema)
+                    return this._getActions()
                 },
                 getData: this.getData.bind(this),
                 setData: async (data: any) => {
@@ -420,7 +442,7 @@ export default class ScomMarkdownEditor extends Module {
     }
 
     private getThemeSchema() {
-        const themeSchema: IDataSchema = {
+        const dataSchema: IDataSchema = {
             type: 'object',
             properties: {
                 textAlign: {
@@ -431,18 +453,133 @@ export default class ScomMarkdownEditor extends Module {
                         'right'
                     ]
                 },
-                backgroundColor: {
-                    type: 'string',
-                    format: 'color'
+                "customBackgroundColor": {
+                    "title": "Custom background color",
+                    "type": "boolean"
+                },
+                "backgroundColor": {
+                    "title": "Background color",
+                    "type": "string",
+                    "format": "color"
+                },
+                "customTextColor": {
+                    "title": "Custom text color",
+                    "type": "boolean"
+                },
+                "textColor": {
+                    "title": "Text color",
+                    "type": "string",
+                    "format": "color"
+                },
+                "customTextSize": {
+                  "title": "Custom text size",
+                  "type": "boolean"
+                },
+                "textSize": {
+                  "title": "Text size",
+                    "type": "string",
+                    "oneOf": [
+                        {"title": "Extra Small", "const": "xs"},
+                        {"title": "Small", "const": "sm"},
+                        {"title": "Normal", "const": "md"},
+                        {"title": "Large", "const": "lg"},
+                        {"title": "Extra Large", "const": "xl"}
+                    ]
                 }
             }
         }
-        return themeSchema;
+
+        const jsonUISchema: IUISchema = {
+            "type": "VerticalLayout",
+            "elements": [
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/textAlign"
+                        }
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/customBackgroundColor"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/backgroundColor",
+                            "rule": {
+                                "effect": "ENABLE",
+                                "condition": {
+                                    "scope": "#/properties/customBackgroundColor",
+                                    "schema": {
+                                        "const": true
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/customTextColor"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/textColor",
+                            "rule": {
+                                "effect": "ENABLE",
+                                "condition": {
+                                    "scope": "#/properties/customTextColor",
+                                    "schema": {
+                                        "const": true
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "HorizontalLayout",
+                    "elements": [
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/customTextSize"
+                        },
+                        {
+                            "type": "Control",
+                            "scope": "#/properties/textSize",
+                            "rule": {
+                                "effect": "ENABLE",
+                                "condition": {
+                                    "scope": "#/properties/customTextSize",
+                                    "schema": {
+                                        "const": true
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+
+        return { dataSchema, jsonUISchema };
     }
 
     render() {
         return (
-            <i-vstack id="pnlMarkdownEditor">
+            <i-vstack
+                id="pnlMarkdownEditor"
+                background={{color: `var(--custom-background-color, var(--background-main))`}}
+                font={{color: `var(--custom-text-color, var(--text-primary))`}}
+            >
                 <i-markdown-editor
                     id="mdViewer"
                     viewer={true}
