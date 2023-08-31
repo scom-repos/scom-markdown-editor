@@ -14,19 +14,25 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
             fontWeight: 'normal'
         };
     };
-    const pSizeStyle = (level, size) => {
+    const pBaseFontSize = (size) => {
         switch (size) {
             case 'xs':
-                return `font-size: ${20 - (level - 1) * 2}px;`;
+                return 10;
             case 'sm':
-                return `font-size: ${22 - (level - 1) * 2}px;`;
+                return 12;
             case 'md':
-                return `font-size: ${24 - (level - 1) * 2}px;`;
+                return 14;
             case 'lg':
-                return `font-size: ${26 - (level - 1) * 2}px;`;
+                return 16;
             case 'xl':
-                return `font-size: ${28 - (level - 1) * 2}px;`;
+                return 18;
         }
+    };
+    const pSizeStyle = (level, size) => {
+        const baseFontSize = pBaseFontSize(size);
+        const ratio = 1.25;
+        const fontSize = baseFontSize * Math.pow(ratio, level);
+        return `font-size: ${Math.round((fontSize + Number.EPSILON) * 100) / 100}px;`;
     };
     let fontSizeStyle = '';
     ['xs', 'sm', 'md', 'lg', 'xl'].forEach(size => {
@@ -41,10 +47,10 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
         }\n`;
         });
         fontSizeStyle += `.font-${size} .toastui-editor-contents p {
-        ${pSizeStyle(6, size)}
+        ${pSizeStyle(1, size)}
     }\n`;
         fontSizeStyle += `i-scom-markdown-editor.font-${size} .toastui-editor-contents p {
-        ${pSizeStyle(6, size)}
+        ${pSizeStyle(1, size)}
     }\n`;
     });
     ['xs', 'sm', 'md', 'lg', 'xl'].forEach(size => {
