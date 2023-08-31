@@ -43,6 +43,9 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
         fontSizeStyle += `.font-${size} .toastui-editor-contents p {
         ${pSizeStyle(6, size)}
     }\n`;
+        fontSizeStyle += `i-scom-markdown-editor.font-${size} .toastui-editor-contents p {
+        ${pSizeStyle(6, size)}
+    }\n`;
     });
     ['xs', 'sm', 'md', 'lg', 'xl'].forEach(size => {
         [1, 2, 3, 4, 5, 6].forEach(p => {
