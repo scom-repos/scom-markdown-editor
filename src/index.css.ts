@@ -1,6 +1,8 @@
 import {Styles} from '@ijstech/components';
 
 const Theme = Styles.Theme.ThemeVars;
+const maxLevel = 6;
+const levels = Array.from({ length: maxLevel }, (_, i) => i + 1);
 
 const pStyle = (level: number) => {
     return {
@@ -8,46 +10,55 @@ const pStyle = (level: number) => {
         fontWeight: 'normal'
     }
 };
-const pSizeStyle = (level: number, size?: string) => {
+const pBaseFontSize = (size: string) => {
     switch (size) {
         case 'xs':
-            return `font-size: ${20 - (level-1) * 2}px;`;
+            return 10;
         case 'sm':
-            return `font-size: ${22 - (level-1) * 2}px;`;
+            return 12;
         case 'md':
-            return `font-size: ${24 - (level-1) * 2}px;`;
+            return 14;
         case 'lg':
-            return `font-size: ${26 - (level-1) * 2}px;`;
+            return 16;
         case 'xl':
-            return `font-size: ${28 - (level-1) * 2}px;`;
+            return 18;
     }
+}
+const pSizeStyle = (level: number, size: string) => {
+    const baseFontSize = pBaseFontSize(size);
+    if (level <= 0) {
+        return `font-size: ${baseFontSize}px;`;
+    }
+    const ratio = 1.25;
+    const fontSize = baseFontSize * Math.pow(ratio, maxLevel - level + 1);
+    return `font-size: ${Math.round((fontSize + Number.EPSILON) * 100) / 100}px;`;
 }
 let fontSizeStyle = '';
 ['xs', 'sm', 'md','lg', 'xl'].forEach(size => {
-    [1,2,3,4,5,6].forEach(p => {
+    levels.forEach(p => {
         fontSizeStyle+=`.font-${size} .toastui-editor-contents .p${p} {
             ${pSizeStyle(p, size)}
         }\n`;
     });
-    [1,2,3,4,5,6].forEach(p => {
+    levels.forEach(p => {
         fontSizeStyle+=`.i-page-section.font-${size} .toastui-editor-contents .p${p} {
             ${pSizeStyle(p, size)}
         }\n`;
     });
     fontSizeStyle+=`.font-${size} .toastui-editor-contents p {
-        ${pSizeStyle(6, size)}
+        ${pSizeStyle(0, size)}
     }\n`;
     fontSizeStyle+=`i-scom-markdown-editor.font-${size} .toastui-editor-contents p {
-        ${pSizeStyle(6, size)}
+        ${pSizeStyle(0, size)}
     }\n`;
 });
 ['xs', 'sm', 'md','lg', 'xl'].forEach(size => {
-    [1,2,3,4,5,6].forEach(p => {
+    levels.forEach(p => {
         fontSizeStyle+=`.font-${size} .toastui-editor-contents h${p} {
             ${pSizeStyle(p, size)}
         }\n`;
     });
-    [1,2,3,4,5,6].forEach(p => {
+    levels.forEach(p => {
         fontSizeStyle+=`.i-page-section.font-${size} .toastui-editor-contents h${p} {
             ${pSizeStyle(p, size)}
         }\n`;
