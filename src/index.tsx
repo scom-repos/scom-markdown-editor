@@ -233,8 +233,14 @@ export default class ScomMarkdownEditor extends Module {
                             theme: this.theme,
                             margin: {bottom: '1rem'}
                         });
-                        config.background = {color: this.getBackgroundColor()}; // bg for editor parent
-                        config.setTag({...this.tag});
+                        config.background = {color: this.getBackgroundColor()};
+                        const elStyles = window.getComputedStyle(this.pnlMarkdownEditor, null);
+                        const backgroundColor = elStyles?.backgroundColor;
+                        const textColor = elStyles?.color;
+                        const tag = {...this.tag};
+                        if (backgroundColor) tag.backgroundColor = backgroundColor;
+                        if (textColor) tag.textColor = textColor;
+                        config.setTag({...tag});
                         const pnlButton = new HStack(undefined, {
                             justifyContent: 'end',
                             alignItems: 'center',
@@ -291,8 +297,12 @@ export default class ScomMarkdownEditor extends Module {
     }
 
     private resetStyles() {
-        this.tag.textColor = this.getTextColor();
-        this.tag.backgroundColor = this.getBackgroundColor();
+        if (!this.tag.customBackgroundColor) {
+            this.tag.backgroundColor = this.getBackgroundColor();
+        }
+        if (!this.tag.customTextColor) {
+            this.tag.textColor = this.getTextColor();
+        }
         for (let i = this.classList.length - 1; i >= 0; i--) {
             const className = this.classList[i];
             if (className.startsWith('font-')) {

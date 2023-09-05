@@ -813,8 +813,16 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                                 theme: this.theme,
                                 margin: { bottom: '1rem' }
                             });
-                            config.background = { color: this.getBackgroundColor() }; // bg for editor parent
-                            config.setTag(Object.assign({}, this.tag));
+                            config.background = { color: this.getBackgroundColor() };
+                            const elStyles = window.getComputedStyle(this.pnlMarkdownEditor, null);
+                            const backgroundColor = elStyles === null || elStyles === void 0 ? void 0 : elStyles.backgroundColor;
+                            const textColor = elStyles === null || elStyles === void 0 ? void 0 : elStyles.color;
+                            const tag = Object.assign({}, this.tag);
+                            if (backgroundColor)
+                                tag.backgroundColor = backgroundColor;
+                            if (textColor)
+                                tag.textColor = textColor;
+                            config.setTag(Object.assign({}, tag));
                             const pnlButton = new components_4.HStack(undefined, {
                                 justifyContent: 'end',
                                 alignItems: 'center',
@@ -877,8 +885,12 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             return actions;
         }
         resetStyles() {
-            this.tag.textColor = this.getTextColor();
-            this.tag.backgroundColor = this.getBackgroundColor();
+            if (!this.tag.customBackgroundColor) {
+                this.tag.backgroundColor = this.getBackgroundColor();
+            }
+            if (!this.tag.customTextColor) {
+                this.tag.textColor = this.getTextColor();
+            }
             for (let i = this.classList.length - 1; i >= 0; i--) {
                 const className = this.classList[i];
                 if (className.startsWith('font-')) {
