@@ -899,6 +899,8 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             }
             this.style.removeProperty('--custom-text-color');
             this.style.removeProperty('--custom-background-color');
+            this.pnlMarkdownEditor.style.removeProperty('color');
+            this.pnlMarkdownEditor.background = { color: '' };
         }
         updateMarkdown(config) {
             if (!config)
@@ -923,14 +925,22 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                     this.classList.remove(className);
                 }
             }
-            if (customTextColor && textColor)
+            if (customTextColor && textColor) {
                 this.style.setProperty('--custom-text-color', textColor);
-            else
+                this.pnlMarkdownEditor.font = { color: 'var(--custom-text-color)' };
+            }
+            else {
                 this.style.removeProperty('--custom-text-color');
-            if (customBackgroundColor && backgroundColor)
+                this.pnlMarkdownEditor.style.removeProperty('color');
+            }
+            if (customBackgroundColor && backgroundColor) {
                 this.style.setProperty('--custom-background-color', backgroundColor);
-            else
+                this.pnlMarkdownEditor.background = { color: 'var(--custom-background-color)' };
+            }
+            else {
                 this.style.removeProperty('--custom-background-color');
+                this.pnlMarkdownEditor.background = { color: '' };
+            }
             if (customTextSize && textSize)
                 this.classList.add(`font-${textSize}`);
         }
@@ -1166,7 +1176,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             return { dataSchema, jsonUISchema };
         }
         render() {
-            return (this.$render("i-vstack", { id: "pnlMarkdownEditor", background: { color: `var(--custom-background-color, var(--background-main))` }, font: { color: `var(--custom-text-color, var(--text-primary))` } },
+            return (this.$render("i-vstack", { id: "pnlMarkdownEditor" },
                 this.$render("i-markdown-editor", { id: "mdViewer", viewer: true, value: this.data, width: '100%', height: 'auto', visible: false }),
                 this.$render("i-panel", { id: "pnlEmpty" },
                     this.$render("i-label", { caption: "Click to edit text", opacity: 0.5, padding: { top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' } })),

@@ -311,6 +311,8 @@ export default class ScomMarkdownEditor extends Module {
         }
         this.style.removeProperty('--custom-text-color');
         this.style.removeProperty('--custom-background-color');
+        this.pnlMarkdownEditor.style.removeProperty('color');
+        this.pnlMarkdownEditor.background = {color: ''};
     }
 
     private updateMarkdown(config: any) {
@@ -334,16 +336,23 @@ export default class ScomMarkdownEditor extends Module {
                 this.classList.remove(className);
             }
         }
-        if (customTextColor && textColor) 
+        if (customTextColor && textColor) {
             this.style.setProperty('--custom-text-color', textColor);
-        else
+            this.pnlMarkdownEditor.font = {color: 'var(--custom-text-color)'};
+        }
+        else {
             this.style.removeProperty('--custom-text-color');
-        if (customBackgroundColor && backgroundColor) 
+            this.pnlMarkdownEditor.style.removeProperty('color');
+        }
+        if (customBackgroundColor && backgroundColor) {
             this.style.setProperty('--custom-background-color', backgroundColor);
-        else 
+            this.pnlMarkdownEditor.background = {color: 'var(--custom-background-color)'};
+        }
+        else {
             this.style.removeProperty('--custom-background-color');
-        if (customTextSize && textSize)
-            this.classList.add(`font-${textSize}`)
+            this.pnlMarkdownEditor.background = {color: ''};
+        }
+        if (customTextSize && textSize) this.classList.add(`font-${textSize}`)
     }
 
     private getData() {
@@ -585,11 +594,7 @@ export default class ScomMarkdownEditor extends Module {
 
     render() {
         return (
-            <i-vstack
-                id="pnlMarkdownEditor"
-                background={{color: `var(--custom-background-color, var(--background-main))`}}
-                font={{color: `var(--custom-text-color, var(--text-primary))`}}
-            >
+            <i-vstack id="pnlMarkdownEditor">
                 <i-markdown-editor
                     id="mdViewer"
                     viewer={true}
