@@ -791,13 +791,13 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                             execute: async () => {
                                 _oldData = this._data;
                                 const content = userInputData.content;
-                                await this.setData({ content });
+                                this.setData({ content });
                                 if (builder === null || builder === void 0 ? void 0 : builder.setData)
                                     builder.setData({ content });
                             },
                             undo: async () => {
                                 this._data = _oldData;
-                                await this.setData({ content: this._data });
+                                this.setData({ content: this._data });
                                 if (builder === null || builder === void 0 ? void 0 : builder.setData)
                                     builder.setData({ content: this._data });
                             },
@@ -951,7 +951,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             this.pnlEmpty.visible = value;
             this.mdViewer.visible = !value;
         }
-        async setData(value) {
+        setData(value) {
             this._data = value.content || '';
             this.toggleEmpty(!this._data);
             if (this.mdViewer) {
@@ -994,12 +994,12 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             return {
                 execute: async () => {
                     _oldData = this._data;
-                    await this.setData({ content });
+                    this.setData({ content });
                     if (builder === null || builder === void 0 ? void 0 : builder.setData)
                         builder.setData({ content });
                 },
                 undo: async () => {
-                    await this.setData({ content: _oldData });
+                    this.setData({ content: _oldData });
                     if (builder === null || builder === void 0 ? void 0 : builder.setData)
                         builder.setData({ content: _oldData });
                 },
@@ -1029,7 +1029,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                     getData: this.getData.bind(this),
                     setData: async (data) => {
                         const defaultData = data_json_1.default.defaultBuilderData;
-                        await this.setData(Object.assign(Object.assign({}, defaultData), data));
+                        this.setData(Object.assign(Object.assign({}, defaultData), data));
                     },
                     getTag: this.getTag.bind(this),
                     setTag: this.setTag.bind(this),
