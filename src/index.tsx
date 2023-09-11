@@ -213,12 +213,12 @@ export default class ScomMarkdownEditor extends Module {
                         execute: async () => {
                             _oldData = this._data;
                             const content = userInputData.content;
-                            await this.setData({content});
+                            this.setData({content});
                             if (builder?.setData) builder.setData({content});
                         },
                         undo: async () => {
                             this._data = _oldData;
-                            await this.setData({content: this._data});
+                            this.setData({content: this._data});
                             if (builder?.setData) builder.setData({content: this._data});
                         },
                         redo: () => { }
@@ -364,7 +364,7 @@ export default class ScomMarkdownEditor extends Module {
         this.mdViewer.visible = !value;
     }
 
-    private async setData(value: any) {
+    private setData(value: any) {
         this._data = value.content || '';
         this.toggleEmpty(!this._data);
         if (this.mdViewer) {
@@ -408,11 +408,11 @@ export default class ScomMarkdownEditor extends Module {
         return {
             execute: async () => {
                 _oldData = this._data;
-                await this.setData({content});
+                this.setData({content});
                 if (builder?.setData) builder.setData({content});
             },
             undo: async () => {
-                await this.setData({content: _oldData});
+                this.setData({content: _oldData});
                 if (builder?.setData) builder.setData({content: _oldData});
             },
             redo: () => { }
@@ -442,7 +442,7 @@ export default class ScomMarkdownEditor extends Module {
                 getData: this.getData.bind(this),
                 setData: async (data: any) => {
                     const defaultData = scconfig.defaultBuilderData as any;
-                    await this.setData({ ...defaultData, ...data })
+                    this.setData({ ...defaultData, ...data })
                 },
                 getTag: this.getTag.bind(this),
                 setTag: this.setTag.bind(this),
