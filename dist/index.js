@@ -41,6 +41,11 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
         const fontSize = baseFontSize * Math.pow(ratio, maxLevel - level + 1);
         return `font-size: ${Math.round((fontSize + Number.EPSILON) * 100) / 100}px;`;
     };
+    const hMarginBottomStyle = (level) => {
+        if (level < 5)
+            return '';
+        return 'margin-bottom: 0px;';
+    };
     let fontSizeStyle = '';
     ['xs', 'sm', 'md', 'lg', 'xl'].forEach(size => {
         levels.forEach(p => {
@@ -66,13 +71,13 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
         levels.forEach(p => {
             fontSizeStyle += `.font-${size} .toastui-editor-contents h${p} {
             ${pSizeStyle(p, size)}
-            line-height: ${lineHeight};
+            line-height: ${lineHeight};${hMarginBottomStyle(p)}
         }\n`;
         });
         levels.forEach(p => {
             fontSizeStyle += `.i-page-section.font-${size} .toastui-editor-contents h${p} {
             ${pSizeStyle(p, size)}
-            line-height: ${lineHeight};
+            line-height: ${lineHeight};${hMarginBottomStyle(p)}
         }\n`;
         });
     });
