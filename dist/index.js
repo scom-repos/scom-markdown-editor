@@ -10,10 +10,13 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
     const Theme = components_1.Styles.Theme.ThemeVars;
     const maxLevel = 6;
     const levels = Array.from({ length: maxLevel }, (_, i) => i + 1);
+    const ratio = 1.25;
+    const lineHeight = '1.618em';
     const pStyle = (level) => {
         return {
             fontSize: `${24 - (level * 2)}px`,
-            fontWeight: 'normal'
+            fontWeight: 'normal',
+            lineHeight: lineHeight
         };
     };
     const pBaseFontSize = (size) => {
@@ -35,20 +38,26 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
         if (level <= 0) {
             return `font-size: ${baseFontSize}px;`;
         }
-        const ratio = 1.25;
         const fontSize = baseFontSize * Math.pow(ratio, maxLevel - level + 1);
         return `font-size: ${Math.round((fontSize + Number.EPSILON) * 100) / 100}px;`;
+    };
+    const hMarginBottomStyle = (level) => {
+        if (level < 5)
+            return '';
+        return 'margin-bottom: 0px;';
     };
     let fontSizeStyle = '';
     ['xs', 'sm', 'md', 'lg', 'xl'].forEach(size => {
         levels.forEach(p => {
             fontSizeStyle += `.font-${size} .toastui-editor-contents .p${p} {
             ${pSizeStyle(p, size)}
+            line-height: ${lineHeight};
         }\n`;
         });
         levels.forEach(p => {
             fontSizeStyle += `.i-page-section.font-${size} .toastui-editor-contents .p${p} {
             ${pSizeStyle(p, size)}
+            line-height: ${lineHeight};
         }\n`;
         });
         fontSizeStyle += `.font-${size} .toastui-editor-contents p {
@@ -62,11 +71,13 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
         levels.forEach(p => {
             fontSizeStyle += `.font-${size} .toastui-editor-contents h${p} {
             ${pSizeStyle(p, size)}
+            line-height: ${lineHeight};${hMarginBottomStyle(p)}
         }\n`;
         });
         levels.forEach(p => {
             fontSizeStyle += `.i-page-section.font-${size} .toastui-editor-contents h${p} {
             ${pSizeStyle(p, size)}
+            line-height: ${lineHeight};${hMarginBottomStyle(p)}
         }\n`;
         });
     });
@@ -137,6 +148,9 @@ define("@scom/scom-markdown-editor/index.css.ts", ["require", "exports", "@ijste
             '.custom-p .p6, p .p6': pStyle(5),
             '.custom-p strong *, p strong *': {
                 fontWeight: 'bold !important'
+            },
+            '.toastui-editor-contents h1, i-scom-markdown-editor .toastui-editor-contents h2, i-scom-markdown-editor .toastui-editor-contents h3, i-scom-markdown-editor .toastui-editor-contents h4, i-scom-markdown-editor .toastui-editor-contents h5, i-scom-markdown-editor .toastui-editor-contents h6': {
+                lineHeight: lineHeight
             }
         }
     });
