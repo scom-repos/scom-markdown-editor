@@ -601,6 +601,7 @@ export default class ScomMarkdownEditor extends Module {
                     value = {this.data}
                     width='100%'
                     height='auto'
+                    overflowWrap="break-word"
                     visible={false}
                 ></i-markdown-editor>
                 <i-panel id="pnlEmpty">
