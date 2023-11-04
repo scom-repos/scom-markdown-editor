@@ -336,8 +336,7 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
             this.onParagraphClicked = this.onParagraphClicked.bind(this);
         }
         get content() {
-            var _a;
-            return (_a = this.mdEditor) === null || _a === void 0 ? void 0 : _a.getMarkdownValue();
+            return this.mdEditor?.getMarkdownValue();
         }
         set content(value) {
             this._data = value;
@@ -463,18 +462,17 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
                         this.levelMapper[nodeIndex] = level;
                         let node = doc.child(nodeIndex);
                         if (node) {
-                            const attrs = Object.assign(Object.assign({}, node.attrs), { htmlAttrs: { class: `p${currentLevel + 1}` } });
+                            const attrs = { ...node.attrs, htmlAttrs: { class: `p${currentLevel + 1}` } };
                             const pNode = schema.nodes.paragraph.create(attrs, node.content, node.marks);
                             tr.replaceWith(nodePos, nodePos + node.nodeSize, pNode);
                             const pMark = schema.marks.span.create(attrs);
                             tr.addMark(nodePos, nodePos + pNode.nodeSize, pMark);
                             node = doc.child(nodeIndex);
                             node.descendants((childNode, childPos) => {
-                                var _a;
                                 if (childNode.marks.length) {
                                     for (let mark of childNode.marks) {
-                                        const htmlAttrs = Object.assign(Object.assign({}, (((_a = mark.attrs) === null || _a === void 0 ? void 0 : _a.htmlAttrs) || {})), { class: `p${currentLevel + 1}` });
-                                        const newMark = schema.marks.span.create(Object.assign(Object.assign({}, mark.attrs), { htmlAttrs }));
+                                        const htmlAttrs = { ...(mark.attrs?.htmlAttrs || {}), class: `p${currentLevel + 1}` };
+                                        const newMark = schema.marks.span.create({ ...mark.attrs, htmlAttrs });
                                         tr.addMark(nodePos + childPos + 1, nodePos + childPos + childNode.nodeSize + 1, newMark);
                                     }
                                 }
@@ -511,10 +509,9 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
                     },
                     htmlInline: {
                         span(node, { entering }) {
-                            var _a;
-                            let attributes = Object.assign({}, node.attrs);
+                            let attributes = { ...node.attrs };
                             if (!attributes.class && node.literal !== '</span>') {
-                                const firstChild = ((_a = node.parent) === null || _a === void 0 ? void 0 : _a.firstChild) || null;
+                                const firstChild = node.parent?.firstChild || null;
                                 let className = '';
                                 if (firstChild) {
                                     const execData = (/^\<span class=\"(p[1-6])\"\>/g).exec(firstChild.literal || '');
@@ -547,7 +544,6 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
             this.inputAIPrompt.visible = !value;
         }
         async readAllChunks(readableStream) {
-            var _a;
             const reader = readableStream.getReader();
             let done;
             let value;
@@ -565,7 +561,7 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
                     try {
                         const parsedMessage = JSON.parse(message);
                         const text = parsedMessage.choices[0].text;
-                        this.mdEditor.value = (((_a = this.mdEditor) === null || _a === void 0 ? void 0 : _a.getMarkdownValue()) || '') + text;
+                        this.mdEditor.value = (this.mdEditor?.getMarkdownValue() || '') + text;
                     }
                     catch (error) {
                         console.error('Could not JSON parse stream message', message, error);
@@ -583,7 +579,7 @@ define("@scom/scom-markdown-editor/editor/index.tsx", ["require", "exports", "@i
                 if (!this.isStopped)
                     await this.readAllChunks(result);
             }
-            catch (_a) { }
+            catch { }
             this.inputAIPrompt.value = '';
             this.toggleStopBtn(false);
         }
@@ -674,11 +670,10 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             this.setData({ content: value });
         }
         get theme() {
-            var _a;
-            return (_a = this._theme) !== null && _a !== void 0 ? _a : 'light';
+            return this._theme ?? 'light';
         }
         set theme(value) {
-            this._theme = value !== null && value !== void 0 ? value : 'light';
+            this._theme = value ?? 'light';
             // this.tag.textColor = this.getTextColor();
             // this.tag.backgroundColor = this.getBackgroundColor();
             // this.renderSettings(this.tag.textColor, this.tag.backgroundColor);
@@ -689,14 +684,14 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
         }
         setRootParent(parent) {
             this._rootParent = parent;
-            const newTag = Object.assign(Object.assign({}, this.tag), { backgroundColor: this.getBackgroundColor() });
+            const newTag = { ...this.tag, backgroundColor: this.getBackgroundColor() };
             this.setTag(newTag, true);
         }
         getBackgroundColor() {
             let backgroundColor = '';
             if (this._rootParent) {
                 const rowStyles = window.getComputedStyle(this._rootParent, null);
-                backgroundColor = rowStyles === null || rowStyles === void 0 ? void 0 : rowStyles.backgroundColor;
+                backgroundColor = rowStyles?.backgroundColor;
             }
             return backgroundColor || this.getDefaultThemeColor();
         }
@@ -704,7 +699,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             let textColor = '';
             if (this._rootParent) {
                 const rowStyles = window.getComputedStyle(this._rootParent, null);
-                textColor = rowStyles === null || rowStyles === void 0 ? void 0 : rowStyles.color;
+                textColor = rowStyles?.color;
             }
             return textColor || this.getDefaultTextColor();
         }
@@ -715,7 +710,6 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             return this.theme === 'light' ? lightTheme.text.primary : darkTheme.text.primary;
         }
         onToggleEditor(value) {
-            var _a;
             this.mdEditor.visible = value;
             this.setAttribute('contenteditable', `${value}`);
             this.mdViewer.visible = !value;
@@ -726,7 +720,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                     editorElm.focus();
             }
             else {
-                const newVal = (_a = this.mdEditor) === null || _a === void 0 ? void 0 : _a.getMarkdownValue();
+                const newVal = this.mdEditor?.getMarkdownValue();
                 this.mdViewer.value = newVal;
                 this.toggleEmpty(!newVal);
                 if (newVal !== this._data)
@@ -806,13 +800,13 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                                 _oldData = this._data;
                                 const content = userInputData.content;
                                 this.setData({ content });
-                                if (builder === null || builder === void 0 ? void 0 : builder.setData)
+                                if (builder?.setData)
                                     builder.setData({ content });
                             },
                             undo: async () => {
                                 this._data = _oldData;
                                 this.setData({ content: this._data });
-                                if (builder === null || builder === void 0 ? void 0 : builder.setData)
+                                if (builder?.setData)
                                     builder.setData({ content: this._data });
                             },
                             redo: () => { }
@@ -829,14 +823,14 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                             });
                             config.background = { color: this.getBackgroundColor() };
                             const elStyles = window.getComputedStyle(this.pnlMarkdownEditor, null);
-                            const backgroundColor = elStyles === null || elStyles === void 0 ? void 0 : elStyles.backgroundColor;
-                            const textColor = elStyles === null || elStyles === void 0 ? void 0 : elStyles.color;
-                            const tag = Object.assign({}, this.tag);
+                            const backgroundColor = elStyles?.backgroundColor;
+                            const textColor = elStyles?.color;
+                            const tag = { ...this.tag };
                             if (backgroundColor)
                                 tag.backgroundColor = backgroundColor;
                             if (textColor)
                                 tag.textColor = textColor;
-                            config.setTag(Object.assign({}, tag));
+                            config.setTag({ ...tag });
                             const pnlButton = new components_4.HStack(undefined, {
                                 justifyContent: 'end',
                                 alignItems: 'center',
@@ -874,7 +868,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                                     this.tag.backgroundColor = userInputData.backgroundColor;
                                     this.tag.settingBgColor = userInputData.backgroundColor;
                                 }
-                                this.tag = Object.assign(Object.assign({}, this.tag), userInputData);
+                                this.tag = { ...this.tag, ...userInputData };
                                 if (builder)
                                     builder.setTag(this.tag);
                                 else
@@ -1001,7 +995,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             }
             // this.height = this.tag?.height || 'auto';
             this.height = 'auto';
-            this.updateMarkdown(Object.assign({}, this.tag));
+            this.updateMarkdown({ ...this.tag });
         }
         getEditCommand(builder, content) {
             let _oldData = '';
@@ -1009,12 +1003,12 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                 execute: async () => {
                     _oldData = this._data;
                     this.setData({ content });
-                    if (builder === null || builder === void 0 ? void 0 : builder.setData)
+                    if (builder?.setData)
                         builder.setData({ content });
                 },
                 undo: async () => {
                     this.setData({ content: _oldData });
-                    if (builder === null || builder === void 0 ? void 0 : builder.setData)
+                    if (builder?.setData)
                         builder.setData({ content: _oldData });
                 },
                 redo: () => { }
@@ -1025,10 +1019,9 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             this.builder = builder;
         }
         onConfirm() {
-            var _a;
             if (!this.commandHistory)
                 return;
-            const newContent = (_a = this.mdEditor) === null || _a === void 0 ? void 0 : _a.getMarkdownValue();
+            const newContent = this.mdEditor?.getMarkdownValue();
             const editCommand = this.getEditCommand(this.builder, newContent);
             this.commandHistory.execute(editCommand);
         }
@@ -1043,7 +1036,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                     getData: this.getData.bind(this),
                     setData: async (data) => {
                         const defaultData = data_json_1.default.defaultBuilderData;
-                        this.setData(Object.assign(Object.assign({}, defaultData), data));
+                        this.setData({ ...defaultData, ...data });
                     },
                     getTag: this.getTag.bind(this),
                     setTag: this.setTag.bind(this),
@@ -1191,7 +1184,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
         }
         render() {
             return (this.$render("i-vstack", { id: "pnlMarkdownEditor" },
-                this.$render("i-markdown-editor", { id: "mdViewer", viewer: true, value: this.data, width: '100%', height: 'auto', visible: false }),
+                this.$render("i-markdown-editor", { id: "mdViewer", viewer: true, value: this.data, width: '100%', height: 'auto', overflowWrap: "break-word", visible: false }),
                 this.$render("i-panel", { id: "pnlEmpty" },
                     this.$render("i-label", { caption: "Click to edit text", opacity: 0.5, padding: { top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' } })),
                 this.$render("i-panel", { id: "pnlEditorWrap" })));
