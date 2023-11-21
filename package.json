@@ -1,19 +1,19 @@
 {
-  "name": "@scom/scom-markdown-editor",
-  "version": "0.1.17",
-  "main": "dist/index.js",
-  "plugin": "dist",
-  "pluginTypes": "pluginTypes/index.d.ts",
-  "types": "types/index.d.ts",
-  "scripts": {
-    "build": "rm -rf dist && npx @ijstech/compiler",
-    "serve": "npx @ijstech/cli serve 8609",
-    "test": "cd test && npm run test && cd .."
-  },
-  "keywords": [],
-  "devDependencies": {
-    "@ijstech/cli": "^0.1.26",
-    "@ijstech/compiler": "^0.1.18",
-    "@ijstech/components": "^0.1.47"
-  }
+    "name": "@scom/scom-markdown-editor",
+    "version": "0.1.18",
+    "main": "dist/index.js",
+    "plugin": "dist",
+    "pluginTypes": "pluginTypes/index.d.ts",
+    "types": "types/index.d.ts",
+    "scripts": {
+        "build": "rm -rf dist && npx @ijstech/compiler",
+        "serve": "npx @ijstech/cli serve 8609",
+        "test": "cd test && npm run test && cd .."
+    },
+    "keywords": [],
+    "devDependencies": {
+        "@ijstech/cli": "^0.1.26",
+        "@ijstech/compiler": "^0.1.18",
+        "@ijstech/components": "^0.1.47"
+    }
 }
