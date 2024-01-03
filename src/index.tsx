@@ -364,14 +364,14 @@ export default class ScomMarkdownEditor extends Module {
         this.mdViewer.visible = !value;
     }
 
-    private setData(value: any) {
+    private async setData(value: any) {
         this._data = value.content || '';
         this.toggleEmpty(!this._data);
         if (this.mdViewer) {
-            this.mdViewer.value = this._data;
+            await this.mdViewer.setValue(this._data);
         }
         if (this.mdEditor) {
-            this.mdEditor.value = this._data;
+            await this.mdEditor.setValue(this._data);
         }
     }
 
@@ -442,7 +442,7 @@ export default class ScomMarkdownEditor extends Module {
                 getData: this.getData.bind(this),
                 setData: async (data: any) => {
                     const defaultData = scconfig.defaultBuilderData as any;
-                    this.setData({ ...defaultData, ...data })
+                    await this.setData({ ...defaultData, ...data })
                 },
                 getTag: this.getTag.bind(this),
                 setTag: this.setTag.bind(this),

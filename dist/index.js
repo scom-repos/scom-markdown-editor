@@ -959,14 +959,14 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
             this.pnlEmpty.visible = value;
             this.mdViewer.visible = !value;
         }
-        setData(value) {
+        async setData(value) {
             this._data = value.content || '';
             this.toggleEmpty(!this._data);
             if (this.mdViewer) {
-                this.mdViewer.value = this._data;
+                await this.mdViewer.setValue(this._data);
             }
             if (this.mdEditor) {
-                this.mdEditor.value = this._data;
+                await this.mdEditor.setValue(this._data);
             }
         }
         getTag() {
@@ -1036,7 +1036,7 @@ define("@scom/scom-markdown-editor", ["require", "exports", "@ijstech/components
                     getData: this.getData.bind(this),
                     setData: async (data) => {
                         const defaultData = data_json_1.default.defaultBuilderData;
-                        this.setData({ ...defaultData, ...data });
+                        await this.setData({ ...defaultData, ...data });
                     },
                     getTag: this.getTag.bind(this),
                     setTag: this.setTag.bind(this),
